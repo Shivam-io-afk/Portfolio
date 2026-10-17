@@ -7,10 +7,11 @@ import { Navbar } from './components/layout/Navbar';
 import { Hero } from './components/sections/Hero';
 import { Projects } from './components/sections/Projects';
 import { Skills } from './components/sections/Skills';
-import { ExperienceAndCredentials } from './components/sections/ExperienceAndCredentials';
+import { RoadmapAscent } from './components/roadmap/RoadmapAscent';
 import { Contact } from './components/sections/Contact';
 import { DevPerfOverlay } from './components/ui/DevPerfOverlay';
 import { useCompileStore } from './store/useCompileStore';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 export const App: React.FC = () => {
   const data = portfolioData;
@@ -25,6 +26,7 @@ export const App: React.FC = () => {
     });
 
     lenis.on('scroll', (e: any) => {
+      ScrollTrigger.update();
       const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
       if (totalScrollable > 0) {
         const progress = e.scroll / totalScrollable;
@@ -73,10 +75,10 @@ export const App: React.FC = () => {
         <Hero data={data} />
         <Projects projects={data.projects} />
         <Skills categories={data.skills} />
-        <ExperienceAndCredentials
-          experience={data.experience}
+        <RoadmapAscent
           certifications={data.certifications}
           education={data.education}
+          experience={data.experience}
         />
         <Contact personal={data.personal} />
       </main>
