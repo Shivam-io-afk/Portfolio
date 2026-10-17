@@ -69,31 +69,17 @@ export const AtmosphereElements: React.FC<AtmosphereElementsProps> = ({
 
       {/* 2. Dark Floor Plane at Y = -3.5 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3.5, 0]}>
-        <planeGeometry args={[50, 50]} />
+        <planeGeometry args={[60, 60]} />
         <meshBasicMaterial color="#07070a" />
       </mesh>
 
-      {/* 3. Fake Soft Flipped Reflection Plane (cheap GPU fake reflection for MEDIUM) */}
-      {!reflectiveFloor && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3.49, 0]}>
-          <planeGeometry args={[14, 14]} />
-          <meshBasicMaterial
-            color="#ff5b1f"
-            transparent
-            opacity={0.035}
-            blending={THREE.AdditiveBlending}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
-
-      {/* 4. Floor Grid fading into darkness */}
-      <gridHelper args={[40, 40, '#ff5b1f', '#d8dde6']} position={[0, -3.48, 0]}>
+      {/* 3. Subtle Cyber Grid Floor fading into darkness */}
+      <gridHelper args={[50, 50, '#ff5b1f', '#222530']} position={[0, -3.48, 0]}>
         <lineBasicMaterial
           attach="material"
-          color="#d8dde6"
+          color="#222530"
           transparent
-          opacity={0.05}
+          opacity={0.12}
           depthWrite={false}
         />
       </gridHelper>

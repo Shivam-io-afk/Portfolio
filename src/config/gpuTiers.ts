@@ -25,22 +25,22 @@ export const TIER_CONFIGS: Record<QualityTier, GpuTierConfig> = {
     dpr: 1.5,
     materialType: 'physical',
     boxSegments: 1, // RoundedBoxGeometry(1, 1, 1, 1, 0.15)
-    dustCount: 1200,
+    dustCount: 1000,
     bloomEnabled: true,
     bloomMipmapBlur: true,
-    bloomResolutionScale: 1.0,
+    bloomResolutionScale: 0.5,
     chromaticAberration: true,
     noiseEnabled: true,
     vignetteEnabled: true,
-    reflectiveFloor: true,
+    reflectiveFloor: false, // fake blurred reflection plane for steady 60fps
   },
   MEDIUM: {
     tier: 'MEDIUM',
-    bitCount: 5000,
+    bitCount: 12000,
     dpr: 1.0, // Fixed 1.0 DPR for integrated GPUs
     materialType: 'standard', // MeshStandardMaterial without heavy clearcoat
     boxSegments: 0, // BoxGeometry (12 triangles)
-    dustCount: 600,
+    dustCount: 800,
     bloomEnabled: true,
     bloomMipmapBlur: true,
     bloomResolutionScale: 0.5, // 0.5 resolution
@@ -51,13 +51,13 @@ export const TIER_CONFIGS: Record<QualityTier, GpuTierConfig> = {
   },
   LOW: {
     tier: 'LOW',
-    bitCount: 3000,
+    bitCount: 12000,
     dpr: 1.0,
     materialType: 'basic',
     boxSegments: 0,
-    dustCount: 300,
-    bloomEnabled: false,
-    bloomMipmapBlur: false,
+    dustCount: 500,
+    bloomEnabled: true,
+    bloomMipmapBlur: true,
     bloomResolutionScale: 0.5,
     chromaticAberration: false,
     noiseEnabled: false,

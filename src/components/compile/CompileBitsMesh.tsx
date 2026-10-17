@@ -20,6 +20,7 @@ const vertexShader = `
   attribute float aSeed;
   attribute float aIsHot;
   attribute float aScale;
+  attribute float aTowerIdx;
 
   uniform float uScrollProgress; // 0.0 to 1.0
   uniform float uTime;
@@ -27,6 +28,7 @@ const vertexShader = `
   uniform float uHoveredSkill;
 
   varying float vIsHot;
+  varying float vIsActiveTower;
   varying vec3 vWorldPos;
 
   // Fast procedural curl approximation
@@ -38,10 +40,12 @@ const vertexShader = `
   }
 
   vec3 morphBetween(vec3 pStart, vec3 pEnd, float segProg, float seed) {
-    float t = smoothstep(0.0, 1.0, clamp((segProg * 1.6) - seed * 0.6, 0.0, 1.0));
+    if (segProg <= 0.0) return pStart;
+    if (segProg >= 1.0) return pEnd;
+    float t = smoothstep(0.0, 1.0, clamp((segProg * 1.5) - seed * 0.5, 0.0, 1.0));
     vec3 mid = mix(pStart, pEnd, t);
     float swirl = sin(3.14159265 * t);
-    vec3 curl = curlNoise(mid * 0.7) * swirl * 0.8;
+    vec3 curl = curlNoise(mid * 0.6) * swirl * 0.7;
     return mid + curl;
   }
 
@@ -49,11 +53,46 @@ const vertexShader = `
     vIsHot = aIsHot;
 
     float p = clamp(uScrollProgress, 0.0, 1.0);
-    float stageFloat = p * 4.0;
-    int stageIdx = int(floor(stageFloat));
+
+    // Precise stage mapping matching page sections:
+    // Stage 0 (SOURCE): 0.00 to 0.14
+    // Morph 0->1: 0.14 to 0.22
+    // Stage 1 (BUILD): 0.22 to 0.38
+    // Morph 1->2: 0.38 to 0.46
+    // Stage 2 (NETWORK): 0.46 to 0.62
+    // Morph 2->3: 0.62 to 0.70
+    // Stage 3 (RUNTIME): 0.70 to 0.84
+    // Morph 3->4: 0.84 to 0.92
+    // Stage 4 (DEPLOY): 0.92 to 1.00
+
+    float s = 0.0;
+    if (p < 0.14) {
+      s = 0.0;
+    } else if (p < 0.22) {
+      s = smoothstep(0.14, 0.22, p);
+    } else if (p < 0.38) {
+      s = 1.0;
+    } else if (p < 0.46) {
+      s = 1.0 + smoothstep(0.38, 0.46, p);
+    } else if (p < 0.62) {
+      s = 2.0;
+    } else if (p < 0.70) {
+      s = 2.0 + smoothstep(0.62, 0.70, p);
+    } else if (p < 0.84) {
+      s = 3.0;
+    } else if (p < 0.92) {
+      s = 3.0 + smoothstep(0.84, 0.92, p);
+    } else {
+      s = 4.0;
+    }
+
+    int stageIdx = int(floor(s));
     if (stageIdx > 3) stageIdx = 3;
-    float segProg = fract(stageFloat);
-    if (p >= 1.0) segProg = 1.0;
+    float segProg = fract(s);
+    if (s >= 4.0) {
+      stageIdx = 3;
+      segProg = 1.0;
+    }
 
     vec3 blendedPos = aPos0;
     if (stageIdx == 0) {
@@ -66,14 +105,25 @@ const vertexShader = `
       blendedPos = morphBetween(aPos3, aPos4, segProg, aSeed);
     }
 
+    // Active tower glow in Stage 1
+    if (stageIdx == 1 && segProg < 0.1 && abs(aTowerIdx - uActiveTower) < 0.5) {
+      vIsActiveTower = 1.0;
+    } else {
+      vIsActiveTower = 0.0;
+    }
+
     // Micro-float idle
     blendedPos += vec3(
-      sin(uTime * 0.6 + aSeed * 6.28) * 0.025,
-      cos(uTime * 0.5 + aSeed * 4.14) * 0.025,
-      sin(uTime * 0.7 + aSeed * 3.14) * 0.025
+      sin(uTime * 0.6 + aSeed * 6.28) * 0.02,
+      cos(uTime * 0.5 + aSeed * 4.14) * 0.02,
+      sin(uTime * 0.7 + aSeed * 3.14) * 0.02
     );
 
-    vec3 transformedPos = position * aScale + blendedPos;
+    // Fast GPU Frustum & Back-Camera culling
+    vec4 mvPos = modelViewMatrix * vec4(blendedPos, 1.0);
+    float cull = (mvPos.z > -0.3 || mvPos.z < -35.0) ? 0.0 : 1.0;
+
+    vec3 transformedPos = position * (aScale * cull) + blendedPos;
     csm_Position = transformedPos;
     vWorldPos = transformedPos;
   }
@@ -81,6 +131,7 @@ const vertexShader = `
 
 const fragmentShader = `
   varying float vIsHot;
+  varying float vIsActiveTower;
   varying vec3 vWorldPos;
   uniform float uTime;
 
@@ -88,6 +139,9 @@ const fragmentShader = `
     if (vIsHot > 0.5) {
       float pulse = 0.85 + 0.25 * sin(uTime * 3.0 + vWorldPos.x * 2.0);
       csm_Emissive = vec3(1.0, 0.357, 0.12) * 2.4 * pulse;
+    } else if (vIsActiveTower > 0.5) {
+      float glow = 0.45 + 0.35 * sin(uTime * 4.0 + vWorldPos.y * 2.0);
+      csm_Emissive = vec3(1.0, 0.4, 0.15) * glow;
     }
   }
 `;
@@ -100,7 +154,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
   const activeTower = useCompileStore((state) => state.activeTower);
 
   const config = TIER_CONFIGS[tier];
-  const count = config.bitCount;
+  const count = config.bitCount; // Full 12000 count on ALL tiers
 
   // Compute geometry & buffers based on Tier
   const { geometry, uniforms } = useMemo(() => {
@@ -124,6 +178,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
     instGeo.setAttribute('aSeed', new THREE.InstancedBufferAttribute(data.seeds, 1));
     instGeo.setAttribute('aIsHot', new THREE.InstancedBufferAttribute(data.hotFlags, 1));
     instGeo.setAttribute('aScale', new THREE.InstancedBufferAttribute(data.scales, 1));
+    instGeo.setAttribute('aTowerIdx', new THREE.InstancedBufferAttribute(data.towerIdxs, 1));
 
     const uniforms = {
       uScrollProgress: { value: 0 },
@@ -139,7 +194,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
   useFrame((_, delta) => {
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value += delta;
-      // Damped smooth transition
+      // Damped smooth transition using real delta
       materialRef.current.uniforms.uScrollProgress.value = THREE.MathUtils.damp(
         materialRef.current.uniforms.uScrollProgress.value,
         scrollProgress,
@@ -177,7 +232,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
         fragmentShader={fragmentShader}
         uniforms={uniforms}
         metalness={config.materialType === 'basic' ? undefined : 1.0}
-        roughness={config.materialType === 'basic' ? undefined : 0.2}
+        roughness={config.materialType === 'basic' ? undefined : 0.32}
         clearcoat={config.materialType === 'physical' ? 1.0 : undefined}
         clearcoatRoughness={config.materialType === 'physical' ? 0.1 : undefined}
         color={new THREE.Color('#d8dde6')}

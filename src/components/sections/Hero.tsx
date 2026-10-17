@@ -32,28 +32,28 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
       </div>
 
       {/* Main Hero Body: Headline with Space Grotesk caps + Instrument Serif italic accents */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end my-auto py-8 sm:py-16">
-        {/* Left Col: Giant Name & Title */}
-        <div className="lg:col-span-8 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end my-auto py-8 sm:py-16">
+        {/* Left Col: Giant Name & Title (max-w 45% / 5 cols) */}
+        <div className="lg:col-span-5 max-w-[480px] xl:max-w-[520px] space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#121318]/90 border border-[#ff5b1f]/30 font-mono text-[10px] uppercase tracking-wide text-[#ff5b1f]">
             <span>// ARCHITECTURE ENTRY POINT</span>
           </div>
 
-          <h1 className="text-[clamp(2.8rem,7.5vw,6.8rem)] leading-[0.92] tracking-tight font-grotesk text-white">
+          <h1 className="text-[clamp(2.6rem,5.5vw,5.6rem)] leading-[0.94] tracking-tight font-grotesk text-white">
             <span className="block uppercase font-bold text-[#d8dde6]">
               <ScrambleText text="SHIVAM" />
             </span>
-            <span className="block italic font-serif text-[#ff5b1f] sm:pl-8 text-[1.08em] font-normal tracking-normal">
+            <span className="block italic font-serif text-[#ff5b1f] sm:pl-4 text-[1.05em] font-normal tracking-normal">
               Mishra.
             </span>
           </h1>
 
-          <p className="font-grotesk text-lg sm:text-2xl text-[#d8dde6]/90 max-w-2xl font-light leading-snug">
+          <p className="font-grotesk text-base sm:text-xl text-[#d8dde6]/90 font-light leading-snug">
             {data.personal.role} <span className="text-[#ff5b1f]">crafting</span> high-performance web systems and AI applications.
           </p>
 
           {/* Minimal Key Metrics Row */}
-          <div className="flex flex-wrap items-center gap-6 pt-4 border-t border-[#d8dde6]/10">
+          <div className="flex flex-wrap items-center gap-5 pt-4 border-t border-[#d8dde6]/10">
             {data.metrics.map((m, idx) => (
               <div key={idx} className="flex items-baseline gap-2 font-mono">
                 <span className="text-[#ff5b1f] font-bold text-base sm:text-lg">{m.value}</span>
@@ -62,6 +62,9 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
             ))}
           </div>
         </div>
+
+        {/* Center Space for 3D Fibonacci Sphere */}
+        <div className="hidden lg:block lg:col-span-3 pointer-events-none" aria-hidden="true" />
 
         {/* Right Col: Subtext Glass Card + CTAs */}
         <div className="lg:col-span-4 flex flex-col justify-end gap-6">

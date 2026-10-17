@@ -32,6 +32,7 @@ export function generateLayoutPositions(count: number) {
   const seeds = new Float32Array(count);
   const hotFlags = new Float32Array(count);
   const scales = new Float32Array(count);
+  const towerIdxs = new Float32Array(count);
 
   const goldenRatio = (1 + Math.sqrt(5)) / 2;
 
@@ -54,11 +55,12 @@ export function generateLayoutPositions(count: number) {
     const z = Math.sin(theta) * radiusAtY;
 
     // Displaced sphere with high-frequency bump
-    const disp = Math.sin(x * 3.5 + y * 2.5) * Math.cos(z * 3.5) * 0.25;
-    const r = 2.2 + disp;
+    const disp = Math.sin(x * 3.5 + y * 2.5) * Math.cos(z * 3.5) * 0.22;
+    const r = 1.85 + disp;
 
-    pos0[i * 3 + 0] = x * r;
-    pos0[i * 3 + 1] = y * r;
+    // Shifted to right (X = 1.8) so left hero text does not overlap
+    pos0[i * 3 + 0] = x * r + 1.8;
+    pos0[i * 3 + 1] = y * r + 0.1;
     pos0[i * 3 + 2] = z * r;
   }
 
@@ -72,6 +74,7 @@ export function generateLayoutPositions(count: number) {
   const perTower = Math.floor(count / 4);
   for (let i = 0; i < count; i++) {
     const towerIdx = Math.min(3, Math.floor(i / perTower));
+    towerIdxs[i] = towerIdx;
     const localIdx = i % perTower;
     const norm = localIdx / perTower;
 
@@ -196,5 +199,5 @@ export function generateLayoutPositions(count: number) {
     }
   }
 
-  return { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales };
+  return { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales, towerIdxs };
 }

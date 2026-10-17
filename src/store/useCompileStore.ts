@@ -46,15 +46,15 @@ export const useCompileStore = create<CompileState>((set, get) => ({
     const clamped = Math.max(0, Math.min(1, progress));
     // Determine activeStage from progress (0 to 1 across 5 segments)
     let stage: StageId = 0;
-    if (clamped >= 0.85) stage = 4;
-    else if (clamped >= 0.62) stage = 3;
-    else if (clamped >= 0.38) stage = 2;
-    else if (clamped >= 0.15) stage = 1;
+    if (clamped >= 0.88) stage = 4;
+    else if (clamped >= 0.66) stage = 3;
+    else if (clamped >= 0.42) stage = 2;
+    else if (clamped >= 0.18) stage = 1;
     else stage = 0;
 
-    // Also determine activeTower if in Stage 1 (0.15 -> 0.38)
-    if (clamped >= 0.15 && clamped < 0.38) {
-      const towerNorm = (clamped - 0.15) / 0.23;
+    // Also determine activeTower if in Stage 1 (0.18 -> 0.42)
+    if (clamped >= 0.18 && clamped < 0.42) {
+      const towerNorm = (clamped - 0.18) / 0.24;
       const tower = Math.min(3, Math.floor(towerNorm * 4));
       set({ scrollProgress: clamped, activeStage: stage, activeTower: tower });
     } else {

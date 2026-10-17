@@ -18,7 +18,7 @@ export const HeroCoreStage0: React.FC = () => {
     const segments = 120;
     for (let i = 0; i <= segments; i++) {
       const theta = (i / segments) * Math.PI * 2;
-      pts.push(new THREE.Vector3(Math.cos(theta) * 2.8, Math.sin(theta) * 2.8, 0));
+      pts.push(new THREE.Vector3(Math.cos(theta) * 2.3, Math.sin(theta) * 2.3, 0));
     }
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, []);
@@ -28,7 +28,7 @@ export const HeroCoreStage0: React.FC = () => {
     const segments = 120;
     for (let i = 0; i <= segments; i++) {
       const theta = (i / segments) * Math.PI * 2;
-      pts.push(new THREE.Vector3(Math.cos(theta) * 3.3, 0, Math.sin(theta) * 3.3));
+      pts.push(new THREE.Vector3(Math.cos(theta) * 2.7, 0, Math.sin(theta) * 2.7));
     }
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, []);
@@ -38,7 +38,7 @@ export const HeroCoreStage0: React.FC = () => {
     const segments = 120;
     for (let i = 0; i <= segments; i++) {
       const theta = (i / segments) * Math.PI * 2;
-      pts.push(new THREE.Vector3(0, Math.cos(theta) * 3.7, Math.sin(theta) * 3.7));
+      pts.push(new THREE.Vector3(0, Math.cos(theta) * 3.1, Math.sin(theta) * 3.1));
     }
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, []);
@@ -72,19 +72,19 @@ export const HeroCoreStage0: React.FC = () => {
   });
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]}>
+    <group ref={groupRef} position={[1.8, 0.1, 0]}>
       {/* 1. Glowing orange core sphere */}
       <mesh ref={coreRef}>
-        <sphereGeometry args={[0.7, 32, 32]} />
+        <sphereGeometry args={[0.55, 32, 32]} />
         <meshBasicMaterial color="#ff5b1f" wireframe={false} />
       </mesh>
 
       {/* Intense Point Light from Core */}
-      <pointLight color="#ff5b1f" intensity={18} distance={12} decay={2} />
+      <pointLight color="#ff5b1f" intensity={16} distance={12} decay={2} />
 
       {/* Inner Wireframe Shell */}
       <mesh>
-        <sphereGeometry args={[0.95, 16, 16]} />
+        <sphereGeometry args={[0.8, 16, 16]} />
         <meshBasicMaterial color="#ff5b1f" wireframe transparent opacity={0.35} />
       </mesh>
 
