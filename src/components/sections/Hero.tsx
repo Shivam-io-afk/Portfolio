@@ -49,7 +49,7 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
           </h1>
 
           <p className="font-grotesk text-base sm:text-xl text-[#d8dde6]/90 font-light leading-snug">
-            {data.personal.role} <span className="text-[#ff5b1f]">crafting</span> high-performance web systems and AI applications.
+            MERN Stack Developer & Creative Technologist <span className="text-[#ff5b1f]">crafting</span> high-performance web apps, with AI features integrated through APIs.
           </p>
 
           {/* Minimal Key Metrics Row */}

@@ -11,7 +11,7 @@ export const MagmaMarquee: React.FC = () => {
     "GSAP & LOCOMOTIVE SCROLL ANIMATIONS",
     "REST APIS & JWT AUTHENTICATION",
     "THREE.JS WEBGL PARTICLE ENGINES",
-    "LLM & AI-POWERED WEB AGENTS",
+    "AI API-INTEGRATED WEB APPS",
   ];
 
   return (

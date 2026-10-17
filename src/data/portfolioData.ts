@@ -65,8 +65,8 @@ export const portfolioData: PortfolioData = {
     name: "SHIVAM MISHRA",
     role: "MERN Stack Developer & Creative Technologist",
     headline: "FORGING RESILIENT FULL-STACK & AI-POWERED WEB ARTIFACTS",
-    subheadline: "MCA Scholar & MERN Stack Developer specializing in responsive architectures, high-performance web animations with GSAP, and intelligent LLM-integrated web applications.",
-    summary: "MCA student at Central University of Haryana with hands-on experience developing full-stack web applications using React.js, Node.js, Express.js, and MongoDB, alongside modern UI/UX design, REST APIs, and emerging AI technologies.",
+    subheadline: "MCA Scholar & MERN Stack Developer focused on responsive architectures, smooth GSAP web animation, and adding AI-powered features to real products.",
+    summary: "MCA student at Central University of Haryana with hands-on experience developing full-stack web applications using React.js, Node.js, Express.js, and MongoDB, alongside modern UI/UX design, REST APIs, and integrating AI features through APIs.",
     availability: "Available for Full-Time Roles & High-Impact Projects",
     location: "Rewa, Madhya Pradesh, India",
     email: "shivam.m28737@gmail.com",
@@ -149,6 +149,23 @@ export const portfolioData: PortfolioData = {
       githubUrl: "https://github.com/Shivam-io-afk/Zoom_meet-Clone",
       featured: true,
     },
+    {
+      id: "sheltermap",
+      title: "SHELTERMAP",
+      subtitle: "Disaster Indication & Relief Platform",
+      category: "Full-Stack Web",
+      year: "2024",
+      description: "Emergency relief platform engineered to map danger zones, locate active shelters, and broadcast situational updates during disaster incidents.",
+      highlights: [
+        "Architected interactive geospatial map interfaces with live danger-zone perimeter visualization",
+        "Engineered real-time shelter capacity tracker and route guidance for affected citizens",
+        "Implemented resilient alert dispatch pipelines with emergency broadcasts and SOS feeds"
+      ],
+      tags: ["JavaScript", "React.js", "Node.js", "Geospatial APIs", "REST APIs", "Tailwind CSS"],
+      metrics: "Live Disaster Grid",
+      githubUrl: "https://github.com/Shivam-io-afk/ShelterMap",
+      featured: true,
+    },
   ],
   skills: [
     {
@@ -178,7 +195,7 @@ export const portfolioData: PortfolioData = {
       skills: [
         { name: "JavaScript (ES6+)", level: "Expert" },
         { name: "C & C++ Programming", level: "Proficient" },
-        { name: "Prompt Engineering & LLM Integration", level: "Intermediate" },
+        { name: "AI API Integration (prompting, responses, UX)", level: "Intermediate" },
         { name: "Git, GitHub & Version Control", level: "Advanced" },
         { name: "Unit Testing (Jest)", level: "Intermediate" },
         { name: "UI/UX Design with AI Tools", level: "Proficient" },

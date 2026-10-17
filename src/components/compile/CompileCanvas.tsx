@@ -82,7 +82,8 @@ const CameraRig: React.FC = () => {
       // Card 1 (TaskFlow, Right) -> Tower on Left (-3.2) -> Look left (lx = -2.2)
       // Card 2 (Khatabook, Left) -> Tower on Right (+3.2) -> Look right (lx = +2.2)
       // Card 3 (Zoom, Right) -> Tower on Left (-3.2) -> Look left (lx = -2.2)
-      const towerLookTargets = [2.2, -2.2, 2.2, -2.2];
+      // Card 4 (ShelterMap, Left) -> Tower on Right (+3.2) -> Look right (lx = +2.2)
+      const towerLookTargets = [2.2, -2.2, 2.2, -2.2, 2.2];
       const targetLook = towerLookTargets[activeTower] ?? 2.2;
 
       cx += 0;

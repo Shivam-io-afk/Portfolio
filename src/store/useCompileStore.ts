@@ -59,7 +59,7 @@ export const useCompileStore = create<CompileState>((set, get) => ({
     let tower = get().activeTower;
     if (clamped >= 0.08 && clamped < 0.39) {
       const towerNorm = (clamped - 0.08) / 0.31;
-      tower = Math.min(3, Math.max(0, Math.floor(towerNorm * 4)));
+      tower = Math.min(4, Math.max(0, Math.floor(towerNorm * 5)));
     }
 
     // ONLY notify Zustand subscribers when stage or tower index ACTUALLY changes

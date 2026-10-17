@@ -147,7 +147,7 @@ export const MILESTONES: Milestone[] = [
     monthSpineIndex: 48,
     title: 'Open to Work.',
     subtitle: 'Ready for High-Impact Roles',
-    description: 'Available for full-time software engineering appointments, resilient full-stack systems, and intelligent AI applications.',
+    description: 'Available for full-time software engineering appointments, resilient full-stack systems, and web apps with integrated AI features.',
     counterValue: 12,
     counterSuffix: '+',
     counterLabel: 'production projects & systems shipped',

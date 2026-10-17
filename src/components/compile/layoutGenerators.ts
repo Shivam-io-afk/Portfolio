@@ -62,15 +62,24 @@ export function generateLayoutPositions(count: number) {
   }
 
   // -------------------------------------------------------------
-  // LAYOUT 1: BUILD (4 Distinct Project Towers framing beside cards)
+  // LAYOUT 1: BUILD (5 Distinct Project Towers framing beside cards)
   // Tower 0: Onbuggy ring of shop stalls (Right side X = +3.2, Card on Left)
   // Tower 1: TaskFlow 3 kanban columns (Left side X = -3.2, Card on Right)
   // Tower 2: Khatabook ledger page fan (Right side X = +3.2, Card on Left)
   // Tower 3: Zoom 3x3 screen grid matrix (Left side X = -3.2, Card on Right)
+  // Tower 4: ShelterMap map grid + alert pins (Right side X = +3.2, Card on Left)
   // -------------------------------------------------------------
-  const perTower = Math.floor(count / 4);
+  const perTower = Math.floor(count / 5);
+  const shelterPinCenters = [
+    [-0.9, -0.7],
+    [0.75, -0.5],
+    [0.0, 0.3],
+    [-0.65, 0.85],
+    [0.9, 0.8],
+  ];
+
   for (let i = 0; i < count; i++) {
-    const towerIdx = Math.min(3, Math.floor(i / perTower));
+    const towerIdx = Math.min(4, Math.floor(i / perTower));
     towerIdxs[i] = towerIdx;
     const localIdx = i % perTower;
     const norm = localIdx / perTower;
@@ -105,7 +114,7 @@ export function generateLayoutPositions(count: number) {
       x = 3.2 + Math.sin(pageAngle) * rad;
       y = pageV * 4.2 - 2.1;
       z = Math.cos(pageAngle) * rad * 0.8;
-    } else {
+    } else if (towerIdx === 3) {
       // Tower 3 (Zoom): 3x3 screen video wall matrix (Left X = -3.2)
       const screenIdx = localIdx % 9; // 0 to 8
       const screenCol = screenIdx % 3;
@@ -117,6 +126,24 @@ export function generateLayoutPositions(count: number) {
       x = screenCenterX + u * 1.15;
       y = screenCenterY + v * 0.85;
       z = (Math.random() - 0.5) * 0.22;
+    } else {
+      // Tower 4 (ShelterMap): Geospatial map grid + rising pulsing alert pins (Right X = +3.2)
+      const isPin = localIdx % 5 === 0;
+      if (isPin) {
+        const pinIdx = Math.floor(localIdx / 5) % shelterPinCenters.length;
+        const [pinX, pinZ] = shelterPinCenters[pinIdx];
+        const pinH = ((localIdx % 36) / 36) * 3.4;
+        x = 3.2 + pinX + (Math.random() - 0.5) * 0.12;
+        y = -1.2 + pinH;
+        z = pinZ + (Math.random() - 0.5) * 0.12;
+        hotFlags[i] = 1.0; // Glow alert pin in signal orange
+      } else {
+        const gridCol = (localIdx % 28) - 14;
+        const gridRow = Math.floor((localIdx % 784) / 28) - 14;
+        x = 3.2 + gridCol * 0.14 + (Math.random() - 0.5) * 0.04;
+        z = gridRow * 0.14 + (Math.random() - 0.5) * 0.04;
+        y = -1.2 + Math.sin(gridCol * 0.22) * Math.cos(gridRow * 0.22) * 0.3 + (localIdx % 4) * 0.04;
+      }
     }
 
     pos1[i * 3 + 0] = x;
