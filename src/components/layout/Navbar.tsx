@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { useCompileStore } from '../../store/useCompileStore';
+import { MagneticButton } from '../ui/MagneticButton';
+import { ResumeBundlerButton } from '../ui/ResumeBundlerButton';
 
 interface NavbarProps {
   availability?: string;
@@ -12,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [time, setTime] = useState<string>('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const activeStage = useCompileStore((state) => state.activeStage);
+  const localTimeTheme = useCompileStore((state) => state.localTimeTheme);
 
   const stageLabels = ['00 / SOURCE', '01 / BUILD', '02 / NETWORK', '03 / RUNTIME', '04 / DEPLOY'];
 
@@ -101,28 +104,48 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </nav>
 
-        {/* 3. Right: Live IST Clock + HIRE ME Button */}
+        {/* 3. Right: Live IST Clock + Resume Bundler + HIRE ME Button */}
         <div className="pointer-events-auto flex items-center gap-3">
-          {/* Live Clock & Stage Pill */}
+          {/* Live Clock with Local-time theme period */}
           <div className="hidden lg:flex flex-col items-end px-3 py-1 bg-[#121318]/90 backdrop-blur-md border border-[#d8dde6]/10">
-            <span className="font-mono text-[11px] text-[#d8dde6] font-medium tracking-mono">
-              {time || '00:00:00'} IST
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: localTimeTheme?.color || '#ff5b1f' }}
+              />
+              <span className="font-mono text-[11px] text-[#d8dde6] font-medium tracking-mono">
+                {time || '00:00:00'} IST
+              </span>
+              <span className="text-[#d8dde6]/30 text-[10px]">·</span>
+              <span
+                className="font-mono text-[10px] font-semibold tracking-mono"
+                style={{ color: localTimeTheme?.color || '#ff5b1f' }}
+              >
+                {localTimeTheme?.period || 'DAY BUILD'}
+              </span>
+            </div>
             <span className="font-mono text-[9px] uppercase tracking-mono text-[#ff5b1f]">
               {stageLabels[activeStage]}
             </span>
           </div>
 
+          {/* Download Resume Bundler Button in Header */}
+          <div className="hidden sm:block">
+            <ResumeBundlerButton variant="compact" />
+          </div>
+
           {/* Main CTA: White rectangle with ink text + orange arrow */}
-          <a
-            href="#contact"
-            className="group flex items-center bg-[#d8dde6] hover:bg-white text-[#07070a] font-mono text-[11px] uppercase tracking-mono font-semibold transition-all shadow-sm"
-          >
-            <span className="px-3.5 py-2">HIRE ME</span>
-            <span className="w-7 h-full py-2 flex items-center justify-center bg-[#ff5b1f] text-black group-hover:bg-[#ff723f] transition-colors">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </span>
-          </a>
+          <MagneticButton>
+            <a
+              href="#contact"
+              className="group flex items-center bg-[#d8dde6] hover:bg-white text-[#07070a] font-mono text-[11px] uppercase tracking-mono font-semibold transition-all shadow-sm"
+            >
+              <span className="px-3.5 py-2">HIRE ME</span>
+              <span className="w-7 h-full py-2 flex items-center justify-center bg-[#ff5b1f] text-black group-hover:bg-[#ff723f] transition-colors">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </a>
+          </MagneticButton>
 
           {/* Mobile hamburger */}
           <button

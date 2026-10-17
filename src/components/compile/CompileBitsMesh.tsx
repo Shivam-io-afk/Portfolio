@@ -31,6 +31,10 @@ const vertexShader = `
   uniform float uScanBeamProgress;
   uniform float uTextMorph;
   uniform float uRepoHighlight[17];
+  uniform float uVelocity;
+  uniform float uMatrixMode;
+  uniform float uIs404;
+  uniform vec3 uAccentColor;
 
   varying float vIsHot;
   varying float vIsActiveTower;
@@ -173,11 +177,33 @@ const vertexShader = `
       sin(uTime * 0.7 + aSeed * 3.14) * 0.02
     );
 
+    // Matrix Rain easter egg: bits rain down vertically
+    if (uMatrixMode > 0.001) {
+      float rainSpeed = 5.0 + aSeed * 7.0;
+      float rainY = mod(blendedPos.y - uTime * rainSpeed + 6.0, 12.0) - 6.0;
+      blendedPos.y = mix(blendedPos.y, rainY, uMatrixMode);
+      blendedPos.x += sin(blendedPos.z * 3.0 + aSeed * 10.0) * 0.15 * uMatrixMode;
+    }
+
+    // 404 Segfault Mode: bits collapse into a chaotic pile on the floor
+    if (uIs404 > 0.001) {
+      float floorY = -4.2 + sin(aSeed * 25.0) * 0.35;
+      blendedPos.y = mix(blendedPos.y, floorY, uIs404);
+      blendedPos.x = mix(blendedPos.x, blendedPos.x * 1.6 + sin(aSeed * 45.0) * 2.8, uIs404);
+      blendedPos.z = mix(blendedPos.z, blendedPos.z * 1.6 + cos(aSeed * 45.0) * 2.8, uIs404);
+    }
+
+    // Velocity stretch: bits stretch along the scroll direction (up to 3x)
+    float absVel = clamp(abs(uVelocity) * 0.05, 0.0, 2.0); // stretch factor up to 3x (1.0 + 2.0)
+    vec3 bitShape = position;
+    bitShape.y *= (1.0 + absVel);
+    bitShape.xz *= (1.0 / sqrt(1.0 + absVel)); // volume preservation
+
     // Fast GPU Frustum & Back-Camera culling
     vec4 mvPos = modelViewMatrix * vec4(blendedPos, 1.0);
     float cull = (mvPos.z > -0.3 || mvPos.z < -35.0) ? 0.0 : 1.0;
 
-    vec3 transformedPos = position * (activeScale * cull) + blendedPos;
+    vec3 transformedPos = bitShape * (activeScale * cull) + blendedPos;
     csm_Position = transformedPos;
     vWorldPos = transformedPos;
   }
@@ -190,17 +216,27 @@ const fragmentShader = `
   varying vec3 vWorldPos;
   uniform float uTime;
   uniform float uScanBeamProgress;
+  uniform float uMatrixMode;
+  uniform float uIs404;
+  uniform vec3 uAccentColor;
 
   void main() {
-    if (vIsRepoHighlight > 0.01) {
+    if (uMatrixMode > 0.01) {
+      // Matrix Easter Egg: phosphorescent neon green
+      float matrixGlow = 1.0 + 0.5 * sin(uTime * 12.0 + vWorldPos.y * 4.0);
+      csm_Emissive = vec3(0.13, 0.95, 0.35) * 3.8 * matrixGlow * uMatrixMode;
+    } else if (uIs404 > 0.01) {
+      // 404 Mode: segmentation fault glitch red
+      csm_Emissive = vec3(1.0, 0.18, 0.18) * 2.6 * uIs404;
+    } else if (vIsRepoHighlight > 0.01) {
       float burstGlow = 1.2 + 0.6 * sin(uTime * 8.0 + vWorldPos.x * 3.0);
-      csm_Emissive = vec3(1.0, 0.42, 0.12) * 3.2 * burstGlow * vIsRepoHighlight;
+      csm_Emissive = uAccentColor * 3.2 * burstGlow * vIsRepoHighlight;
     } else if (vIsHot > 0.5) {
       float pulse = 0.85 + 0.25 * sin(uTime * 3.0 + vWorldPos.x * 2.0);
-      csm_Emissive = vec3(1.0, 0.357, 0.12) * 2.4 * pulse;
+      csm_Emissive = uAccentColor * 2.4 * pulse;
     } else if (vIsActiveTower > 0.5) {
       float glow = 0.55 + 0.35 * sin(uTime * 4.0 + vWorldPos.y * 2.0);
-      csm_Emissive = vec3(1.0, 0.4, 0.15) * glow;
+      csm_Emissive = uAccentColor * 2.0 * glow;
     }
 
     if (uScanBeamProgress > 0.001) {
@@ -271,6 +307,10 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
       uScanBeamProgress: { value: 0 },
       uTextMorph: { value: 0 },
       uRepoHighlight: { value: new Float32Array(17) },
+      uVelocity: { value: 0 },
+      uMatrixMode: { value: 0 },
+      uIs404: { value: 0 },
+      uAccentColor: { value: new THREE.Color('#ff5b1f') },
     };
 
     return { geometry: instGeo, uniforms };
@@ -285,6 +325,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
     if (materialRef.current) {
       const {
         scrollProgress,
+        scrollVelocity,
         activeTower,
         shockwaveProgress,
         scanBeamProgress,
@@ -292,6 +333,9 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
         textSpellTarget,
         hoveredSkillNode,
         hoveredRepoId,
+        matrixProgress,
+        is404,
+        localTimeTheme,
       } = useCompileStore.getState();
 
       // Constellation repo highlighting in Stage 2
@@ -329,6 +373,27 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
         4.0,
         delta
       );
+      materialRef.current.uniforms.uVelocity.value = THREE.MathUtils.damp(
+        materialRef.current.uniforms.uVelocity.value,
+        scrollVelocity || 0,
+        6.0,
+        delta
+      );
+      materialRef.current.uniforms.uMatrixMode.value = THREE.MathUtils.damp(
+        materialRef.current.uniforms.uMatrixMode.value,
+        matrixProgress || 0,
+        8.0,
+        delta
+      );
+      materialRef.current.uniforms.uIs404.value = THREE.MathUtils.damp(
+        materialRef.current.uniforms.uIs404.value,
+        is404 ? 1.0 : 0.0,
+        5.0,
+        delta
+      );
+      if (localTimeTheme?.color) {
+        materialRef.current.uniforms.uAccentColor.value.set(localTimeTheme.color);
+      }
       materialRef.current.uniforms.uActiveTower.value = activeTower;
       materialRef.current.uniforms.uMousePos.value.copy(mouseHitPoint);
       materialRef.current.uniforms.uShockwaveProgress.value = shockwaveProgress;
@@ -337,6 +402,11 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
     }
 
     if (meshRef.current) {
+      const { deviceTilt } = useCompileStore.getState();
+      const tiltX = THREE.MathUtils.degToRad(THREE.MathUtils.clamp(deviceTilt?.beta || 0, -10, 10));
+      const tiltZ = THREE.MathUtils.degToRad(THREE.MathUtils.clamp(deviceTilt?.gamma || 0, -10, 10));
+      meshRef.current.rotation.x = THREE.MathUtils.damp(meshRef.current.rotation.x, tiltX, 4.0, delta);
+      meshRef.current.rotation.z = THREE.MathUtils.damp(meshRef.current.rotation.z, -tiltZ, 4.0, delta);
       meshRef.current.rotation.y += delta * 0.015;
     }
   });

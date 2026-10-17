@@ -15,6 +15,10 @@ import { CompileBootLoader } from './components/compile/CompileBootLoader';
 import { StageBackgroundWord } from './components/compile/StageBackgroundWord';
 import { ProjectDeepDiveModal } from './components/sections/ProjectDeepDiveModal';
 import { AskShivamTerminal } from './components/ui/AskShivamTerminal';
+import { CrosshairCursor } from './components/ui/CrosshairCursor';
+import { GitLogFooter } from './components/ui/GitLogFooter';
+import { SegmentationFault404 } from './components/ui/SegmentationFault404';
+import { MobileTiltController } from './components/ui/MobileTiltController';
 import { useCompileStore } from './store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -32,6 +36,7 @@ export const App: React.FC = () => {
       autoRaf: false,
       smoothWheel: true,
     });
+    (window as any).__lenis = lenis;
 
     // Strictly nothing else runs inside lenis.on('scroll')
     lenis.on('scroll', ScrollTrigger.update);
@@ -56,11 +61,23 @@ export const App: React.FC = () => {
     });
 
     // Drive Lenis via GSAP ticker with lagSmoothing(0)
+    let currentVelSplit = 0;
     const updateTicker = (time: number) => {
       lenis.raf(time * 1000);
       const scrollY = lenis.scroll || window.scrollY || 0;
       const progress = scrollY / cachedMaxScroll;
       useCompileStore.getState().setScrollProgress(progress);
+
+      // Scroll-velocity reactions: update velocity uniform & heading RGB split
+      const vel = lenis.velocity || 0;
+      useCompileStore.getState().setScrollVelocity(vel);
+      const targetSplit = Math.min(3.5, Math.abs(vel) * 0.07);
+      currentVelSplit += (targetSplit - currentVelSplit) * 0.15;
+      if (currentVelSplit > 0.03) {
+        document.documentElement.style.setProperty('--vel-split', `${currentVelSplit.toFixed(2)}px`);
+      } else {
+        document.documentElement.style.setProperty('--vel-split', '0px');
+      }
     };
     gsap.ticker.add(updateTicker);
     gsap.ticker.lagSmoothing(0);
@@ -77,11 +94,71 @@ export const App: React.FC = () => {
     };
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
+    // Keyboard navigation (1-5 for stages, arrows for projects) & Konami code
+    const konamiCode = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+    let konamiIndex = 0;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl?.tagName === 'INPUT' ||
+        activeEl?.tagName === 'TEXTAREA' ||
+        activeEl?.getAttribute('contenteditable') === 'true';
+      if (isInput) return;
+      if (useCompileStore.getState().isTerminalOpen) return;
+
+      // 1. Konami Code Easter Egg (Matrix mode)
+      const key = e.key.toLowerCase();
+      if (key === konamiCode[konamiIndex]) {
+        konamiIndex++;
+        if (konamiIndex === konamiCode.length) {
+          konamiIndex = 0;
+          useCompileStore.getState().triggerMatrixMode();
+          return;
+        }
+      } else {
+        konamiIndex = key === konamiCode[0] ? 1 : 0;
+      }
+
+      // 2. Stage jump keys 1-5
+      if (['1', '2', '3', '4', '5'].includes(e.key)) {
+        e.preventDefault();
+        const targets = ['#hero', '#projects', '#skills', '#experience', '#contact'];
+        const idx = parseInt(e.key, 10) - 1;
+        const targetId = targets[idx];
+        if (targetId) {
+          lenis.scrollTo(targetId, {
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          });
+        }
+        return;
+      }
+
+      // 3. Arrow keys left/right to cycle active project tower
+      if (e.key === 'ArrowLeft') {
+        const currentTower = useCompileStore.getState().activeTower;
+        if (currentTower > 0) {
+          useCompileStore.getState().setActiveTower(currentTower - 1);
+        }
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        const currentTower = useCompileStore.getState().activeTower;
+        if (currentTower < 4) {
+          useCompileStore.getState().setActiveTower(currentTower + 1);
+        }
+        return;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       gsap.ticker.remove(updateTicker);
       lenis.destroy();
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -133,10 +210,22 @@ export const App: React.FC = () => {
             Rewa, MP, India • &copy; {new Date().getFullYear()} • COMPILE ARCHITECTURE SYSTEM
           </div>
         </div>
+
+        {/* Real GitHub Git Log cached 1hr */}
+        <GitLogFooter />
       </footer>
 
       {/* Interactive Scripted 'Ask Shivam' Terminal Shell (Press /) */}
       <AskShivamTerminal />
+
+      {/* Interactive Desktop Crosshair Cursor with Bit Readout */}
+      <CrosshairCursor />
+
+      {/* Custom 404 Exception Overlay (SIGSEGV / Floor bit collapse) */}
+      <SegmentationFault404 />
+
+      {/* Mobile DeviceOrientation Gyro Controller (±10° tilt) */}
+      <MobileTiltController />
     </div>
   );
 };

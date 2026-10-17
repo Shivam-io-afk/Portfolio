@@ -182,6 +182,30 @@ const RenderMonitor: React.FC = () => {
   return null;
 };
 
+const DynamicChromaticAberration: React.FC = () => {
+  const effectRef = useRef<any>(null);
+
+  useFrame((_, delta) => {
+    if (effectRef.current) {
+      const { scrollVelocity } = useCompileStore.getState();
+      const absVel = Math.min(3.0, Math.abs(scrollVelocity || 0) * 0.05);
+      const targetOffset = 0.0006 + absVel * 0.0035;
+      effectRef.current.offset.x = THREE.MathUtils.damp(effectRef.current.offset.x, targetOffset, 6.0, delta);
+      effectRef.current.offset.y = THREE.MathUtils.damp(effectRef.current.offset.y, targetOffset, 6.0, delta);
+    }
+  });
+
+  return (
+    <ChromaticAberration
+      ref={effectRef}
+      blendFunction={BlendFunction.NORMAL}
+      offset={new THREE.Vector2(0.0006, 0.0006)}
+      radialModulation={false}
+      modulationOffset={0}
+    />
+  );
+};
+
 export const CompileCanvas: React.FC = () => {
   const qualityTier = useCompileStore((state) => state.qualityTier);
   const config = TIER_CONFIGS[qualityTier];
@@ -247,14 +271,7 @@ export const CompileCanvas: React.FC = () => {
               luminanceSmoothing={0.35}
               mipmapBlur={config.bloomMipmapBlur}
             />
-            {config.chromaticAberration && (
-              <ChromaticAberration
-                blendFunction={BlendFunction.NORMAL}
-                offset={new THREE.Vector2(0.0006, 0.0006)}
-                radialModulation={false}
-                modulationOffset={0}
-              />
-            )}
+            {config.chromaticAberration && <DynamicChromaticAberration />}
             {config.noiseEnabled && (
               <Noise blendFunction={BlendFunction.OVERLAY} opacity={0.03} />
             )}

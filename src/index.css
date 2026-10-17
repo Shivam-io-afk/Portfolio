@@ -65,3 +65,11 @@
 .text-shadow-hero {
   text-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
 }
+
+/* Scroll-velocity reactions: headings get a slight RGB split (text-shadow offsets) */
+h1, h2, .rgb-split-target {
+  text-shadow: calc(var(--vel-split, 0px) * -1.2) 0 0 rgba(255, 91, 31, 0.65),
+               calc(var(--vel-split, 0px) * 1.2) 0 0 rgba(56, 189, 248, 0.65);
+  transition: text-shadow 0.08s ease-out;
+}
+

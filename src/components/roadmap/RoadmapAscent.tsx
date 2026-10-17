@@ -26,7 +26,6 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
 
   const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
   const [showCredsModal, setShowCredsModal] = useState<boolean>(false);
-  const [textKey, setTextKey] = useState<number>(0);
 
   // Check prefers-reduced-motion
   useEffect(() => {
@@ -38,7 +37,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  // GSAP ScrollTrigger Pinning Setup with anticipatePin: 1 and standard pinSpacing
+  // GSAP ScrollTrigger Pinning Setup with anticipatePin: 0 and standard pinSpacing
   useEffect(() => {
     if (isReducedMotion || !containerRef.current || !pinRef.current) return;
 
@@ -51,7 +50,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
         start: 'top top',
         end: '+=350%',
         pinSpacing: true,
-        anticipatePin: 1,
+        anticipatePin: 0,
         scrub: 0.6,
         onUpdate: (self) => {
           const progress = self.progress; // 0 to 1
@@ -85,11 +84,6 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
 
     return () => ctx.revert();
   }, [isReducedMotion]);
-
-  // Mask-up transition trigger only when activeIndex changes
-  useEffect(() => {
-    setTextKey((prev) => prev + 1);
-  }, [activeIndex]);
 
   const activeMilestone: Milestone = MILESTONES[activeIndex] || MILESTONES[0];
 
@@ -234,7 +228,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
               </div>
 
               {/* Mask-Up Transition Keyframe Container */}
-              <div key={textKey} className="animate-roadmap-mask space-y-2">
+              <div key={activeIndex} className="animate-roadmap-mask space-y-2">
                 {/* 2. Title (Space Grotesk 600, ~44px) */}
                 <h3 className="font-grotesk text-2xl sm:text-3xl lg:text-4xl font-semibold text-white tracking-tight leading-tight">
                   {activeMilestone.title}

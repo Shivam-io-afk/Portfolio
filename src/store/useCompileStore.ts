@@ -38,6 +38,18 @@ export interface CompileState {
   openTerminal: () => void;
   closeTerminal: () => void;
   toggleTerminal: () => void;
+
+  // Phase 6: Alive Details
+  scrollVelocity: number;
+  matrixMode: boolean;
+  matrixProgress: number;
+  is404: boolean;
+  localTimeTheme: { period: string; color: string; tag: string };
+  deviceTilt: { gamma: number; beta: number };
+  setScrollVelocity: (v: number) => void;
+  triggerMatrixMode: () => void;
+  setIs404: (val: boolean) => void;
+  setDeviceTilt: (gamma: number, beta: number) => void;
   
   setScrollProgress: (progress: number) => void;
   setActiveStage: (stage: StageId) => void;
@@ -55,6 +67,23 @@ export interface CompileState {
   triggerScanBeam: () => void;
   spellWord: (target: 'SHIVAM' | 'THANKS', durationMs?: number) => void;
 }
+
+export const getLocalTimeTheme = () => {
+  const hour = new Date().getHours();
+  // 5–9 dawn gold #ffb347
+  // 9–17 signal orange #ff5b1f
+  // 17–20 sunset coral #ff7a59
+  // 20–5 night blue #5b8cff
+  if (hour >= 5 && hour < 9) {
+    return { period: 'DAWN BUILD', color: '#ffb347', tag: 'DAWN' };
+  } else if (hour >= 9 && hour < 17) {
+    return { period: 'DAY BUILD', color: '#ff5b1f', tag: 'DAY' };
+  } else if (hour >= 17 && hour < 20) {
+    return { period: 'SUNSET BUILD', color: '#ff7a59', tag: 'SUNSET' };
+  } else {
+    return { period: 'NIGHT BUILD', color: '#5b8cff', tag: 'NIGHT' };
+  }
+};
 
 const checkInitialBootState = (): boolean => {
   if (typeof window === 'undefined') return true;
@@ -93,6 +122,48 @@ export const useCompileStore = create<CompileState>((set, get) => {
 
     hoveredRepoId: null,
     setHoveredRepoId: (id) => set({ hoveredRepoId: id }),
+
+    // Phase 6: Alive Details
+    scrollVelocity: 0,
+    matrixMode: false,
+    matrixProgress: 0,
+    is404: false,
+    localTimeTheme: (() => {
+      const theme = getLocalTimeTheme();
+      if (typeof document !== 'undefined') {
+        document.documentElement.style.setProperty('--accent-color', theme.color);
+      }
+      return theme;
+    })(),
+    deviceTilt: { gamma: 0, beta: 0 },
+    setScrollVelocity: (v) => {
+      (get() as any).scrollVelocity = v;
+    },
+    setDeviceTilt: (gamma, beta) => {
+      (get() as any).deviceTilt = { gamma, beta };
+    },
+    setIs404: (val) => set({ is404: val }),
+    triggerMatrixMode: () => {
+      set({ matrixMode: true });
+      (get() as any).matrixProgress = 1.0;
+      get().addTerminalLog('EASTER_EGG: Matrix rain protocol engaged [5s]');
+      setTimeout(() => {
+        let start: number | null = null;
+        const dur = 800;
+        const fadeOut = (ts: number) => {
+          if (!start) start = ts;
+          const p = Math.max(0, 1 - (ts - start) / dur);
+          (get() as any).matrixProgress = p;
+          if (p > 0) {
+            requestAnimationFrame(fadeOut);
+          } else {
+            set({ matrixMode: false });
+            (get() as any).matrixProgress = 0;
+          }
+        };
+        requestAnimationFrame(fadeOut);
+      }, 5000);
+    },
 
     terminalLogs: [
       'INIT_SYSTEM: Initializing runtime pipeline...',

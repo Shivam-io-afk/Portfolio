@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Copy, Check, ArrowRight, ArrowUpRight, GitBranch } from 'lucide-react';
 import type { PortfolioData } from '../../data/portfolioData';
 import { ScatterText } from '../ui/ScatterText';
+import { MagneticButton } from '../ui/MagneticButton';
+import { ResumeBundlerButton } from '../ui/ResumeBundlerButton';
 import { useCompileStore } from '../../store/useCompileStore';
 
 interface ContactProps {
@@ -111,33 +113,42 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#d8dde6]/10">
-                <div className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/50 mb-3">
-                  EXTERNAL PORTALS
+              <div className="pt-3 border-t border-[#d8dde6]/10 space-y-4">
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/50 mb-3">
+                    RESUME ARTIFACT
+                  </div>
+                  <ResumeBundlerButton variant="full" />
                 </div>
-                <div className="flex flex-wrap gap-3">
-                  <a
-                    href={personal.socials.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#d8dde6]/15 hover:border-[#ff5b1f] text-[#d8dde6] hover:text-[#ff5b1f] font-mono text-[11px] uppercase tracking-mono transition-colors bg-[#07070a]/60"
-                  >
-                    <GitBranch className="w-3.5 h-3.5 text-[#ff5b1f]" />
-                    <span>GitHub</span>
-                    <ArrowUpRight className="w-3 h-3" />
-                  </a>
 
-                  {personal.socials.linkedin && (
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/50 mb-3">
+                    EXTERNAL PORTALS
+                  </div>
+                  <div className="flex flex-wrap gap-3">
                     <a
-                      href={personal.socials.linkedin}
+                      href={personal.socials.github}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#d8dde6]/15 hover:border-[#ff5b1f] text-[#d8dde6] hover:text-[#ff5b1f] font-mono text-[11px] uppercase tracking-mono transition-colors bg-[#07070a]/60"
                     >
-                      <span>LinkedIn</span>
-                      <ArrowUpRight className="w-3 h-3 text-[#ff5b1f]" />
+                      <GitBranch className="w-3.5 h-3.5 text-[#ff5b1f]" />
+                      <span>GitHub</span>
+                      <ArrowUpRight className="w-3 h-3" />
                     </a>
-                  )}
+
+                    {personal.socials.linkedin && (
+                      <a
+                        href={personal.socials.linkedin}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#d8dde6]/15 hover:border-[#ff5b1f] text-[#d8dde6] hover:text-[#ff5b1f] font-mono text-[11px] uppercase tracking-mono transition-colors bg-[#07070a]/60"
+                      >
+                        <span>LinkedIn</span>
+                        <ArrowUpRight className="w-3 h-3 text-[#ff5b1f]" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -189,13 +200,15 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
                   <span className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/40">
                     ENCRYPTION: SSL / DIRECT DISPATCH
                   </span>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#ff5b1f] text-black font-mono text-xs font-bold uppercase tracking-mono hover:bg-white transition-all shadow-md group"
-                  >
-                    <span>{status === 'sent' ? 'Transmission Dispatched' : 'Send Message'}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  <MagneticButton>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#ff5b1f] text-black font-mono text-xs font-bold uppercase tracking-mono hover:bg-white transition-all shadow-md group"
+                    >
+                      <span>{status === 'sent' ? 'Transmission Dispatched' : 'Send Message'}</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </MagneticButton>
                 </div>
               </form>
             </div>
