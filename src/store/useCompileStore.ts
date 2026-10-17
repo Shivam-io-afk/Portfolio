@@ -32,6 +32,12 @@ export interface CompileState {
   // Phase 4: Arsenal Repo Constellation
   hoveredRepoId: string | null;
   setHoveredRepoId: (id: string | null) => void;
+
+  // Phase 5: Scripted Ask Shivam Terminal
+  isTerminalOpen: boolean;
+  openTerminal: () => void;
+  closeTerminal: () => void;
+  toggleTerminal: () => void;
   
   setScrollProgress: (progress: number) => void;
   setActiveStage: (stage: StageId) => void;
@@ -165,6 +171,11 @@ export const useCompileStore = create<CompileState>((set, get) => {
       } catch {}
       set({ isDeepDiveOpen: false, activeDeepDiveId: null });
     },
+
+    isTerminalOpen: false,
+    openTerminal: () => set({ isTerminalOpen: true }),
+    closeTerminal: () => set({ isTerminalOpen: false }),
+    toggleTerminal: () => set((state) => ({ isTerminalOpen: !state.isTerminalOpen })),
     setHoveredSkillNode: (skill) => set({ hoveredSkillNode: skill }),
     setCursorPos: (x, y) => {
       (get() as any).cursorPos = { x, y };

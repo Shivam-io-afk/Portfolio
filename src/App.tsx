@@ -14,6 +14,7 @@ import { DevPerfOverlay } from './components/ui/DevPerfOverlay';
 import { CompileBootLoader } from './components/compile/CompileBootLoader';
 import { StageBackgroundWord } from './components/compile/StageBackgroundWord';
 import { ProjectDeepDiveModal } from './components/sections/ProjectDeepDiveModal';
+import { AskShivamTerminal } from './components/ui/AskShivamTerminal';
 import { useCompileStore } from './store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -133,6 +134,9 @@ export const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Interactive Scripted 'Ask Shivam' Terminal Shell (Press /) */}
+      <AskShivamTerminal />
     </div>
   );
 };
