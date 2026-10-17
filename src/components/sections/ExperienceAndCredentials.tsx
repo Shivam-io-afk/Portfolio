@@ -31,19 +31,19 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
               <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
               <span>SCENE 04 // TRAJECTORY & EXPERIENCE</span>
             </div>
-            <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+            <h2 className="font-display text-3xl sm:text-5xl text-white tracking-tight mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
               <ScatterText>Field Experience.</ScatterText>
             </h2>
 
-            <div className="space-y-0 divide-y divide-white/15">
+            <div className="p-6 sm:p-8 bg-kumo-ink/80 backdrop-blur-md border border-white/10 shadow-soft-card space-y-0 divide-y divide-white/15">
               {experience.map((exp, idx) => (
-                <div key={idx} className="py-7 group">
+                <div key={idx} className="py-6 first:pt-0 last:pb-0 group">
                   <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
                     <div className="flex items-baseline gap-3">
                       <span className="font-mono text-xs text-kumo-orange font-bold">
                         {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <h3 className="font-serif text-xl sm:text-2xl text-white group-hover:text-kumo-orange transition-colors">
+                      <h3 className="font-display text-xl sm:text-2xl text-white group-hover:text-kumo-orange transition-colors">
                         {exp.role}
                       </h3>
                     </div>
@@ -52,7 +52,7 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
                     </span>
                   </div>
 
-                  <ul className="space-y-2 mt-4 text-xs font-sans text-white/70 leading-relaxed list-none pl-6 border-l border-white/15">
+                  <ul className="space-y-2 mt-4 text-xs font-sans text-white/80 leading-relaxed list-none pl-6 border-l border-white/15">
                     {exp.points.map((pt, pIdx) => (
                       <li key={pIdx} className="relative before:content-['—'] before:absolute before:-left-5 before:text-kumo-orange">
                         <span>{pt}</span>
@@ -71,19 +71,19 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h3 className="font-serif text-2xl sm:text-3xl text-white tracking-tight mb-6 flex items-center gap-2">
+            <h3 className="font-display text-2xl sm:text-3xl text-white tracking-tight mb-6 flex items-center gap-2">
               <ScatterText>Verified Credentials.</ScatterText>
             </h3>
 
-            <div className="space-y-0 divide-y divide-white/15">
+            <div className="p-6 sm:p-8 bg-kumo-ink/80 backdrop-blur-md border border-white/10 shadow-soft-card space-y-0 divide-y divide-white/15">
               {certifications.map((cert, idx) => (
-                <div key={idx} className="py-5 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
                   <div className="pr-4">
                     <div className="flex items-baseline gap-2">
                       <span className="font-mono text-[10px] text-kumo-orange">
                         {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <h4 className="font-serif text-base sm:text-lg text-white group-hover:text-kumo-orange transition-colors">
+                      <h4 className="font-display text-base sm:text-lg text-white group-hover:text-kumo-orange transition-colors">
                         {cert.title}
                       </h4>
                     </div>
@@ -120,20 +120,20 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
             <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
             <span>ACADEMIC FOUNDATIONS</span>
           </div>
-          <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-tight mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+          <h2 className="font-display text-3xl sm:text-5xl text-white tracking-tight mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
             <ScatterText>Education History.</ScatterText>
           </h2>
 
-          <div className="space-y-0 divide-y divide-white/15">
+          <div className="p-6 sm:p-8 bg-kumo-ink/80 backdrop-blur-md border border-white/10 shadow-soft-card space-y-0 divide-y divide-white/15">
             {education.map((edu, idx) => (
-              <div key={idx} className="py-6 group">
+              <div key={idx} className="py-5 first:pt-0 last:pb-0 group">
                 <div className="flex items-baseline justify-between gap-3">
                   <div className="flex items-baseline gap-3">
                     <span className="font-mono text-xs text-kumo-orange font-bold">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div>
-                      <h3 className="font-serif text-xl sm:text-2xl text-white group-hover:text-kumo-orange transition-colors">
+                      <h3 className="font-display text-xl sm:text-2xl text-white group-hover:text-kumo-orange transition-colors">
                         {edu.degree}
                       </h3>
                       <p className="font-sans text-xs text-white/60 mt-0.5">

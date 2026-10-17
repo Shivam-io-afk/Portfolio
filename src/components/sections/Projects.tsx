@@ -24,7 +24,7 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
             <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
             <span>SCENE 02 // ROOFTOPS & ARCHITECTURE</span>
           </div>
-          <h2 className="font-serif text-4xl sm:text-6xl text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+          <h2 className="font-display text-4xl sm:text-6xl text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
             <ScatterText>Selected Works.</ScatterText>
           </h2>
         </div>
@@ -33,8 +33,8 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
         </p>
       </motion.div>
 
-      {/* Minimal Hairline List Layout (No heavy boxes) */}
-      <div className="space-y-0 divide-y divide-white/15">
+      {/* Minimal Hairline List Layout with Protective Scrim */}
+      <div className="p-6 sm:p-10 bg-kumo-ink/80 backdrop-blur-md border border-white/10 shadow-soft-card space-y-0 divide-y divide-white/15">
         {projects.map((project, idx) => {
           const indexFormatted = String(idx + 1).padStart(2, '0');
 
@@ -70,7 +70,7 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
 
                 {/* Title + Subtitle + Description */}
                 <div className="lg:col-span-6 space-y-3">
-                  <h3 className="font-serif text-2xl sm:text-3xl text-white group-hover:text-kumo-orange transition-colors">
+                  <h3 className="font-display text-2xl sm:text-3xl text-white group-hover:text-kumo-orange transition-colors">
                     {project.title}
                   </h3>
                   <div className="font-mono text-xs text-kumo-sky/90 tracking-mono">

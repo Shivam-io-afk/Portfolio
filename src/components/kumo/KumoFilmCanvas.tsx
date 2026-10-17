@@ -36,8 +36,8 @@ export const KumoFilmCanvas: React.FC<KumoFilmCanvasProps> = ({ onSceneChange })
       return;
     }
 
-    // Fallback: draw nearest loaded frame
-    for (let offset = 1; offset < 30; offset++) {
+    // Fallback: draw nearest loaded frame searching entire sequence
+    for (let offset = 1; offset <= TOTAL_FRAMES; offset++) {
       const fallbackBefore = imagesRef.current.get(frameIdx - offset);
       if (fallbackBefore && fallbackBefore.complete && fallbackBefore.naturalWidth > 0) {
         renderImage(ctx, canvas, fallbackBefore);
@@ -71,7 +71,7 @@ export const KumoFilmCanvas: React.FC<KumoFilmCanvasProps> = ({ onSceneChange })
     ctx.drawImage(img, nx, ny, nw, nh);
   };
 
-  // 1. Initial preload of first 30 frames
+  // 1. Initial preload of first 30 frames PLUS keyframes for each section
   useEffect(() => {
     let active = true;
 
@@ -88,9 +88,9 @@ export const KumoFilmCanvas: React.FC<KumoFilmCanvasProps> = ({ onSceneChange })
             imagesRef.current.set(idx, img);
             setLoadedCount((c) => c + 1);
             const canvas = canvasRef.current;
-            if (canvas && (currentFrameRef.current === idx || currentFrameRef.current <= 1)) {
+            if (canvas) {
               const ctx = canvas.getContext('2d');
-              if (ctx) {
+              if (ctx && (currentFrameRef.current === idx || currentFrameRef.current === -1)) {
                 currentFrameRef.current = idx;
                 renderImage(ctx, canvas, img);
               }
@@ -102,19 +102,21 @@ export const KumoFilmCanvas: React.FC<KumoFilmCanvasProps> = ({ onSceneChange })
       });
     };
 
-    // Load initial 30 frames sequentially/parallel batch
-    const initialBatch = Array.from({ length: PRELOAD_COUNT }, (_, i) => i + 1);
-    Promise.all(initialBatch.map(loadFrame)).then(() => {
-      // Lazy-load the remaining frames progressively
+    // Preload initial frames + keyframes (Scene 1: 1..20, Scene 2: 35, Scene 3: 55, Scene 4: 70, Scene 5: 85, 90)
+    const keyframes = [1, 5, 10, 15, 20, 25, 30, 35, 45, 55, 65, 75, 85, 90];
+    Promise.all(keyframes.map(loadFrame)).then(() => {
       if (!active) return;
-      let nextIdx = PRELOAD_COUNT + 1;
-
+      // Stagger load all remaining frames
+      const remaining: number[] = [];
+      for (let i = 1; i <= TOTAL_FRAMES; i++) {
+        if (!imagesRef.current.has(i)) remaining.push(i);
+      }
+      let rIdx = 0;
       const loadNext = () => {
-        if (!active || nextIdx > TOTAL_FRAMES) return;
-        loadFrame(nextIdx).then(() => {
-          nextIdx++;
-          // Stagger slightly so network isn't flooded
-          setTimeout(loadNext, 16);
+        if (!active || rIdx >= remaining.length) return;
+        loadFrame(remaining[rIdx]).then(() => {
+          rIdx++;
+          setTimeout(loadNext, 12);
         });
       };
       loadNext();

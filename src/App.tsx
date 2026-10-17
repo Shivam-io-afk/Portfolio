@@ -28,6 +28,12 @@ export const App: React.FC = () => {
     }
     requestAnimationFrame(raf);
 
+    if (window.location.hash) {
+      setTimeout(() => {
+        lenis.scrollTo(window.location.hash, { immediate: true });
+      }, 120);
+    }
+
     return () => {
       lenis.destroy();
     };

@@ -47,7 +47,7 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
             <span>PORTFOLIO SEED // 2026</span>
           </div>
 
-          <h1 className="font-serif text-[clamp(3rem,8vw,7.5rem)] leading-[0.92] text-white tracking-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]">
+          <h1 className="font-display text-[clamp(3rem,8vw,7.5rem)] leading-[0.92] text-white tracking-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]">
             <span className="block">
               <ScatterText>Shivam</ScatterText>
             </span>
@@ -88,10 +88,10 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a
                 href="#projects"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white text-kumo-ink font-mono text-[11px] font-semibold tracking-mono uppercase hover:bg-kumo-orange hover:text-white transition-all shadow-md group"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#1b1a19] font-mono text-[11px] font-bold tracking-mono uppercase hover:bg-kumo-orange hover:text-white transition-all shadow-md group"
               >
-                <span>View Works</span>
-                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                <span className="text-[#1b1a19] group-hover:text-white transition-colors">View Works</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#1b1a19] group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
               </a>
 
               <a

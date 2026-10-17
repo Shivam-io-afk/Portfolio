@@ -30,11 +30,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
+      {/* Subtle top scrim to prevent text overlap: 120px gradient from black/45 to transparent */}
+      <div className="fixed top-0 inset-x-0 h-32 pointer-events-none z-40 bg-gradient-to-b from-black/50 via-black/25 to-transparent backdrop-blur-[2px]" />
+
       <header className="fixed top-5 inset-x-0 z-50 px-5 sm:px-8 max-w-7xl mx-auto flex items-center justify-between pointer-events-none transition-colors duration-500">
         {/* 1. Left: Logo framed with four corner-bracket marks + Kanji */}
         <a
           href="#hero"
-          className="pointer-events-auto relative group px-3.5 py-2 flex items-center gap-2.5 backdrop-blur-md bg-kumo-ink/60 border border-white/10 hover:border-kumo-orange/50 transition-all shadow-soft-card"
+          className="pointer-events-auto relative group px-3.5 py-2 flex items-center gap-2.5 backdrop-blur-xl bg-kumo-ink/85 border border-white/15 hover:border-kumo-orange/60 transition-all shadow-soft-card"
         >
           {/* Four Corner Brackets */}
           <span className="absolute -top-1 -left-1 text-[10px] text-kumo-orange font-mono select-none">⌜</span>
@@ -55,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </a>
 
         {/* 2. Center: 2-3 Small Columns of Links (Desktop) */}
-        <nav className="pointer-events-auto hidden md:flex items-center gap-8 px-6 py-2 bg-kumo-ink/65 backdrop-blur-md border border-white/10 shadow-soft-card">
+        <nav className="pointer-events-auto hidden md:flex items-center gap-8 px-6 py-2.5 bg-kumo-ink/85 backdrop-blur-xl border border-white/15 shadow-soft-card">
           {/* Column 1 */}
           <div className="flex flex-col gap-1 text-left">
             <a
@@ -111,7 +114,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="pointer-events-auto flex items-center gap-3">
           <a
             href="#contact"
-            className="flex items-center gap-2.5 px-4 py-2 bg-kumo-ink/65 backdrop-blur-md border border-white/10 hover:border-kumo-orange/60 hover:bg-black/50 transition-all shadow-soft-card group"
+            className="flex items-center gap-2.5 px-4 py-2.5 bg-kumo-ink/85 backdrop-blur-xl border border-white/15 hover:border-kumo-orange/60 hover:bg-black/60 transition-all shadow-soft-card group"
           >
             <span className="w-2 h-2 rounded-full bg-kumo-orange animate-pulse shadow-[0_0_8px_#e8772e]" />
             <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-white/90 group-hover:text-kumo-orange transition-colors">
@@ -123,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 bg-kumo-ink/70 backdrop-blur-md border border-white/10 text-white hover:text-kumo-orange transition-colors"
+            className="md:hidden p-2.5 bg-kumo-ink/85 backdrop-blur-xl border border-white/15 text-white hover:text-kumo-orange transition-colors"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -147,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="#projects"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-baseline justify-between text-2xl font-serif text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
+              className="flex items-baseline justify-between text-2xl font-display text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
             >
               <span>Selected Works.</span>
               <span className="font-mono text-xs tracking-mono text-white/40">01</span>
@@ -155,7 +158,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="#skills"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-baseline justify-between text-2xl font-serif text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
+              className="flex items-baseline justify-between text-2xl font-display text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
             >
               <span>Technical Arsenal.</span>
               <span className="font-mono text-xs tracking-mono text-white/40">02</span>
@@ -163,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="#experience"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-baseline justify-between text-2xl font-serif text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
+              className="flex items-baseline justify-between text-2xl font-display text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
             >
               <span>Trajectory & Credentials.</span>
               <span className="font-mono text-xs tracking-mono text-white/40">03</span>
@@ -171,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="#contact"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-baseline justify-between text-2xl font-serif text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
+              className="flex items-baseline justify-between text-2xl font-display text-white hover:text-kumo-orange transition-colors border-b border-white/10 pb-3"
             >
               <span>Initiate Transmission.</span>
               <span className="font-mono text-xs tracking-mono text-white/40">04</span>

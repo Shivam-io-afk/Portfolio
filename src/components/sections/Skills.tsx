@@ -22,7 +22,7 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
           <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
           <span>SCENE 03 // THROUGH CLOUDS & ATMOSPHERE</span>
         </div>
-        <h2 className="font-serif text-4xl sm:text-6xl text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+        <h2 className="font-display text-4xl sm:text-6xl text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
           <ScatterText>Technical Arsenal.</ScatterText>
         </h2>
       </motion.div>
@@ -48,7 +48,7 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
                     <span className="font-mono text-xs text-kumo-orange font-bold tracking-mono">
                       {indexFormatted}
                     </span>
-                    <h3 className="font-serif text-xl text-kumo-ink font-semibold">
+                    <h3 className="font-display text-xl text-kumo-ink font-semibold">
                       {category.title}
                     </h3>
                   </div>

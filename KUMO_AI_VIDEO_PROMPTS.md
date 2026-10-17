@@ -58,3 +58,4 @@ print('Successfully extracted 90 custom frames to public/frames!')
 "
 ```
 3. Refresh your browser at `http://localhost:5173/` — your custom AI video will instantly scrub with the scroll!
+

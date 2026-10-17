@@ -76,11 +76,11 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
         >
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex items-center">
-              <span className="font-serif text-4xl sm:text-7xl lg:text-8xl text-white/90 uppercase tracking-tight px-6 drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]">
+              <span className="font-display text-4xl sm:text-7xl lg:text-8xl text-white/90 uppercase tracking-tight px-6 drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]">
                 Initiate Transmission.
               </span>
               <span className="text-kumo-orange text-3xl sm:text-5xl px-4">✦</span>
-              <span className="font-serif text-4xl sm:text-7xl lg:text-8xl text-white/40 uppercase tracking-tight px-6">
+              <span className="font-display text-4xl sm:text-7xl lg:text-8xl text-white/40 uppercase tracking-tight px-6">
                 Let&apos;s Build Together.
               </span>
               <span className="text-kumo-orange text-3xl sm:text-5xl px-4">✦</span>
@@ -89,20 +89,23 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-12">
+      <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
+        {/* Soft Sun Glow placed top-right of section, away from form */}
+        <div className="absolute -top-12 right-0 w-80 h-80 rounded-full bg-gradient-to-bl from-kumo-orange/15 to-transparent blur-3xl pointer-events-none -z-10" />
+
         {/* Eyebrow & Intro */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0.8, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
           className="max-w-2xl mb-16"
         >
           <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-kumo-orange mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
             <span>SCENE 05 // OPEN SKY & DIRECT RELAY</span>
           </div>
-          <h2 className="font-serif text-4xl sm:text-6xl text-white tracking-tight mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+          <h2 className="font-display text-4xl sm:text-6xl text-white tracking-tight mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
             <ScatterText>Get in Touch.</ScatterText>
           </h2>
           <p className="font-sans text-xs sm:text-sm text-white/75 leading-relaxed">
@@ -204,7 +207,7 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
                       required
                       type="text"
                       placeholder="NAME OR ORGANIZATION"
-                      className="w-full px-4 py-2.5 bg-black/40 border border-white/15 text-xs font-mono text-white placeholder:text-white/30 focus:border-kumo-orange focus:outline-none transition-colors"
+                      className="w-full px-4 py-2.5 bg-black/75 backdrop-blur-md border border-white/20 text-xs font-mono text-white placeholder:text-white/45 focus:border-kumo-orange focus:bg-black/90 focus:outline-none transition-colors"
                     />
                   </div>
 
@@ -216,7 +219,7 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
                       required
                       type="email"
                       placeholder="CONTACT@DOMAIN.COM"
-                      className="w-full px-4 py-2.5 bg-black/40 border border-white/15 text-xs font-mono text-white placeholder:text-white/30 focus:border-kumo-orange focus:outline-none transition-colors"
+                      className="w-full px-4 py-2.5 bg-black/75 backdrop-blur-md border border-white/20 text-xs font-mono text-white placeholder:text-white/45 focus:border-kumo-orange focus:bg-black/90 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -229,7 +232,7 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
                     required
                     rows={4}
                     placeholder="DESCRIBE PROJECT GOALS, TECH STACK, TIMELINES & COLLABORATION SCOPE..."
-                    className="w-full px-4 py-2.5 bg-black/40 border border-white/15 text-xs font-mono text-white placeholder:text-white/30 focus:border-kumo-orange focus:outline-none transition-colors resize-none"
+                    className="w-full px-4 py-2.5 bg-black/75 backdrop-blur-md border border-white/20 text-xs font-mono text-white placeholder:text-white/45 focus:border-kumo-orange focus:bg-black/90 focus:outline-none transition-colors resize-none"
                   />
                 </div>
 

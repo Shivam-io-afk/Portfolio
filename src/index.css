@@ -101,6 +101,43 @@
   animation-play-state: paused;
 }
 
+/* Explicit Kumo Palette & Display Font */
+.font-display {
+  font-family: 'Amarante', serif !important;
+}
+
+.text-kumo-ink {
+  color: #1b1a19 !important;
+}
+
+.text-kumo-orange {
+  color: #e8772e !important;
+}
+
+.text-kumo-sky {
+  color: #8fb3e0 !important;
+}
+
+.text-kumo-cream {
+  color: #f3ece0 !important;
+}
+
+.bg-kumo-ink {
+  background-color: #1b1a19 !important;
+}
+
+.bg-kumo-orange {
+  background-color: #e8772e !important;
+}
+
+.bg-kumo-cream {
+  background-color: #f3ece0 !important;
+}
+
+.border-kumo-orange {
+  border-color: #e8772e !important;
+}
+
 /* Motion Accessibility */
 @media (prefers-reduced-motion: reduce) {
   * {
