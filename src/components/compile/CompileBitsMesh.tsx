@@ -1,10 +1,11 @@
 import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import CustomShaderMaterial from 'three-custom-shader-material';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { QualityTier, TIER_CONFIGS } from '../../config/gpuTiers';
 import { generateLayoutPositions } from './layoutGenerators';
+import { generateTextBitPositions } from './textToBits';
 import { useCompileStore } from '../../store/useCompileStore';
 
 interface CompileBitsMeshProps {
@@ -17,15 +18,17 @@ const vertexShader = `
   attribute vec3 aPos2;
   attribute vec3 aPos3;
   attribute vec3 aPos4;
-  attribute float aSeed;
-  attribute float aIsHot;
-  attribute float aScale;
-  attribute float aTowerIdx;
+  attribute vec3 aPosText;
+  attribute vec4 aParams; // x: seed, y: isHot, z: scale, w: towerIdx
 
   uniform float uScrollProgress;
   uniform float uTime;
   uniform float uActiveTower;
   uniform float uHoveredSkill;
+  uniform vec3 uMousePos;
+  uniform float uShockwaveProgress;
+  uniform float uScanBeamProgress;
+  uniform float uTextMorph;
 
   varying float vIsHot;
   varying float vIsActiveTower;
@@ -41,6 +44,11 @@ const vertexShader = `
   }
 
   void main() {
+    float aSeed = aParams.x;
+    float aIsHot = aParams.y;
+    float aScale = aParams.z;
+    float aTowerIdx = aParams.w;
+
     vIsHot = aIsHot;
 
     float p = clamp(uScrollProgress, 0.0, 1.0);
@@ -98,6 +106,42 @@ const vertexShader = `
       vIsActiveTower = 0.0;
     }
 
+    // Interactive Core: cursor repels bits on Hero sphere
+    if (p < 0.08) {
+      float distToMouse = length(blendedPos.xy - uMousePos.xy);
+      if (distToMouse < 1.7) {
+        vec2 repelDir = normalize(blendedPos.xy - uMousePos.xy + vec2(0.0001, 0.0001));
+        float force = (1.0 - distToMouse / 1.7) * 0.7;
+        blendedPos.xy += repelDir * force;
+      }
+    }
+
+    // Shockwave on click
+    if (uShockwaveProgress > 0.001) {
+      float waveRadius = uShockwaveProgress * 4.8;
+      float waveDist = abs(length(blendedPos - vec3(0.95, 0.35, 0.0)) - waveRadius);
+      if (waveDist < 0.7) {
+        float push = (1.0 - waveDist / 0.7) * 0.5;
+        blendedPos += normalize(blendedPos - vec3(0.95, 0.35, 0.0)) * push;
+        vIsHot = 1.0;
+      }
+    }
+
+    // Scan beam sweep flicker
+    if (uScanBeamProgress > 0.001) {
+      float scanY = (0.5 - uScanBeamProgress) * 7.0;
+      float distToScan = abs(blendedPos.y - scanY);
+      if (distToScan < 0.9) {
+        vIsHot = 1.0;
+      }
+    }
+
+    // Text to bits morphing (SHIVAM / THANKS)
+    if (uTextMorph > 0.001) {
+      float ease = smoothstep(0.0, 1.0, uTextMorph);
+      blendedPos = mix(blendedPos, aPosText, ease);
+    }
+
     // Subtle micro-float
     blendedPos += vec3(
       sin(uTime * 0.6 + aSeed * 6.28) * 0.02,
@@ -120,6 +164,7 @@ const fragmentShader = `
   varying float vIsActiveTower;
   varying vec3 vWorldPos;
   uniform float uTime;
+  uniform float uScanBeamProgress;
 
   void main() {
     if (vIsHot > 0.5) {
@@ -129,15 +174,35 @@ const fragmentShader = `
       float glow = 0.55 + 0.35 * sin(uTime * 4.0 + vWorldPos.y * 2.0);
       csm_Emissive = vec3(1.0, 0.4, 0.15) * glow;
     }
+
+    if (uScanBeamProgress > 0.001) {
+      float scanY = (0.5 - uScanBeamProgress) * 7.0;
+      float distToScan = abs(vWorldPos.y - scanY);
+      if (distToScan < 0.9) {
+        csm_Emissive += vec3(1.0, 0.9, 0.75) * (1.0 - distToScan / 0.9) * 2.5;
+      }
+    }
   }
 `;
 
 export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<any>(null);
+  const currentTextTargetRef = useRef<string>('NONE');
+
+  const { raycaster, pointer, camera } = useThree();
+  const mousePlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), []);
+  const mouseHitPoint = useMemo(() => new THREE.Vector3(100, 100, 0), []);
 
   const config = TIER_CONFIGS[tier];
   const count = config.bitCount; // Full 12000 count on ALL tiers
+
+  // Precompute text layouts
+  const { posTextShivam, posTextThanks } = useMemo(() => {
+    const shivam = generateTextBitPositions('SHIVAM', count, { fontSize: 210, scale: 0.024 });
+    const thanks = generateTextBitPositions('THANKS ✓', count, { fontSize: 180, scale: 0.020 });
+    return { posTextShivam: shivam, posTextThanks: thanks };
+  }, [count]);
 
   // Compute geometry & buffers based on Tier
   const { geometry, uniforms } = useMemo(() => {
@@ -156,25 +221,60 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
     instGeo.setAttribute('aPos2', new THREE.InstancedBufferAttribute(data.pos2, 3));
     instGeo.setAttribute('aPos3', new THREE.InstancedBufferAttribute(data.pos3, 3));
     instGeo.setAttribute('aPos4', new THREE.InstancedBufferAttribute(data.pos4, 3));
-    instGeo.setAttribute('aSeed', new THREE.InstancedBufferAttribute(data.seeds, 1));
-    instGeo.setAttribute('aIsHot', new THREE.InstancedBufferAttribute(data.hotFlags, 1));
-    instGeo.setAttribute('aScale', new THREE.InstancedBufferAttribute(data.scales, 1));
-    instGeo.setAttribute('aTowerIdx', new THREE.InstancedBufferAttribute(data.towerIdxs, 1));
+    instGeo.setAttribute('aPosText', new THREE.InstancedBufferAttribute(new Float32Array(posTextShivam), 3));
+
+    // Pack single-float attributes into a single vec4 attribute to respect WebGL 16-attrib limit
+    const params = new Float32Array(count * 4);
+    for (let i = 0; i < count; i++) {
+      params[i * 4 + 0] = data.seeds[i];
+      params[i * 4 + 1] = data.hotFlags[i];
+      params[i * 4 + 2] = data.scales[i];
+      params[i * 4 + 3] = data.towerIdxs[i];
+    }
+    instGeo.setAttribute('aParams', new THREE.InstancedBufferAttribute(params, 4));
 
     const uniforms = {
       uScrollProgress: { value: 0 },
       uTime: { value: 0 },
       uActiveTower: { value: 0 },
       uHoveredSkill: { value: 0 },
+      uMousePos: { value: new THREE.Vector3(100, 100, 0) },
+      uShockwaveProgress: { value: 0 },
+      uScanBeamProgress: { value: 0 },
+      uTextMorph: { value: 0 },
     };
 
     return { geometry: instGeo, uniforms };
-  }, [count, config.boxSegments]);
+  }, [count, config.boxSegments, posTextShivam]);
 
   // Frame tick updates using MathUtils.damp - reads store directly with getState (ZERO React re-renders!)
   useFrame((_, delta) => {
+    // Project mouse onto 3D z=0 plane
+    raycaster.setFromCamera(pointer, camera);
+    raycaster.ray.intersectPlane(mousePlane, mouseHitPoint);
+
     if (materialRef.current) {
-      const { scrollProgress, activeTower } = useCompileStore.getState();
+      const {
+        scrollProgress,
+        activeTower,
+        shockwaveProgress,
+        scanBeamProgress,
+        textSpellProgress,
+        textSpellTarget,
+      } = useCompileStore.getState();
+
+      // Swap text buffer if spell target changed
+      if (currentTextTargetRef.current !== textSpellTarget) {
+        currentTextTargetRef.current = textSpellTarget;
+        const attr = geometry.attributes.aPosText as THREE.BufferAttribute;
+        if (textSpellTarget === 'SHIVAM') {
+          attr.copyArray(posTextShivam);
+          attr.needsUpdate = true;
+        } else if (textSpellTarget === 'THANKS') {
+          attr.copyArray(posTextThanks);
+          attr.needsUpdate = true;
+        }
+      }
 
       materialRef.current.uniforms.uTime.value += delta;
       materialRef.current.uniforms.uScrollProgress.value = THREE.MathUtils.damp(
@@ -184,6 +284,10 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
         delta
       );
       materialRef.current.uniforms.uActiveTower.value = activeTower;
+      materialRef.current.uniforms.uMousePos.value.copy(mouseHitPoint);
+      materialRef.current.uniforms.uShockwaveProgress.value = shockwaveProgress;
+      materialRef.current.uniforms.uScanBeamProgress.value = scanBeamProgress;
+      materialRef.current.uniforms.uTextMorph.value = textSpellProgress;
     }
 
     if (meshRef.current) {
@@ -205,6 +309,11 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
       ref={meshRef}
       args={[geometry, undefined, count]}
       frustumCulled={false}
+      onPointerDown={(e) => {
+        // Trigger shockwave when clicking the 3D bits
+        e.stopPropagation();
+        useCompileStore.getState().triggerShockwave();
+      }}
     >
       <CSMComponent
         ref={materialRef}

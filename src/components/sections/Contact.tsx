@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Copy, Check, ArrowRight, ArrowUpRight, GitBranch } from 'lucide-react';
 import type { PortfolioData } from '../../data/portfolioData';
 import { ScatterText } from '../ui/ScatterText';
+import { useCompileStore } from '../../store/useCompileStore';
 
 interface ContactProps {
   personal: PortfolioData['personal'];
@@ -21,6 +22,7 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('sent');
+    useCompileStore.getState().spellWord('THANKS', 2500);
     setTimeout(() => setStatus('idle'), 4000);
   };
 

@@ -11,6 +11,8 @@ import { Skills } from './components/sections/Skills';
 import { RoadmapAscent } from './components/roadmap/RoadmapAscent';
 import { Contact } from './components/sections/Contact';
 import { DevPerfOverlay } from './components/ui/DevPerfOverlay';
+import { CompileBootLoader } from './components/compile/CompileBootLoader';
+import { StageBackgroundWord } from './components/compile/StageBackgroundWord';
 import { useCompileStore } from './store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -85,6 +87,12 @@ export const App: React.FC = () => {
     <div className="relative min-h-screen bg-[#07070a] text-[#d8dde6] overflow-x-hidden selection:bg-[#ff5b1f] selection:text-black font-grotesk antialiased">
       {/* Dev Performance HUD Overlay (Only rendered if ?debug is in URL) */}
       <DevPerfOverlay />
+
+      {/* High-Tech Terminal Boot Sequence (Skippable on click / skipped on return visit) */}
+      <CompileBootLoader />
+
+      {/* Giant 25vw Outlined Stage Background Words (SOURCE / BUILD / NETWORK / RUNTIME / DEPLOY) */}
+      <StageBackgroundWord />
 
       {/* Fixed Full-Screen Three.js Canvas with Tier-Adaptive Bits Instanced Mesh */}
       <CompileCanvas />
