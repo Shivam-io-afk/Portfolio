@@ -33,6 +33,8 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tailwind-merge": "^3.7.0",
-    "three": "^0.186.1"
+    "three": "^0.186.1",
+    "three-custom-shader-material": "^6.4.0",
+    "zustand": "^5.0.15"
   }
 }

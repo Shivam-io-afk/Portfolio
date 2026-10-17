@@ -4,88 +4,61 @@
 
 :root {
   color-scheme: dark;
+  --ink: #07070a;
+  --graphite: #121318;
+  --chrome: #d8dde6;
+  --signal: #ff5b1f;
+  --ok: #4ade80;
 }
 
-/* Kumo Custom Scrollbar */
+/* Custom Minimal Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #1b1a19;
+  background: #07070a;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(232, 119, 46, 0.45);
-  border-radius: 9999px;
+  background: rgba(216, 221, 230, 0.2);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #e8772e;
+  background: #ff5b1f;
 }
 
-/* Accessibility Focus States in Orange */
+/* Accessibility Focus States */
 *:focus-visible {
-  outline: 2px solid #e8772e !important;
+  outline: 2px solid #ff5b1f !important;
   outline-offset: 3px !important;
 }
 
-/* Kumo Fine Scanlines (1px line every 3px, ~6% opacity) */
-.kumo-scanlines {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 98;
-  background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.25) 50%
-  ), linear-gradient(
-    90deg,
-    rgba(255, 0, 0, 0.03),
-    rgba(0, 255, 0, 0.01),
-    rgba(0, 0, 255, 0.03)
-  );
-  background-size: 100% 3px, 6px 100%;
-  opacity: 0.06;
+/* Hairline border utility */
+.hairline-b {
+  border-bottom: 1px solid rgba(216, 221, 230, 0.1);
+}
+.hairline-t {
+  border-top: 1px solid rgba(216, 221, 230, 0.1);
+}
+.hairline-l {
+  border-left: 1px solid rgba(216, 221, 230, 0.1);
+}
+.hairline-r {
+  border-right: 1px solid rgba(216, 221, 230, 0.1);
 }
 
-/* Kumo Animated Film Grain (~5%) */
-@keyframes kumo-grain {
-  0%, 100% { transform: translate(0, 0); }
-  10% { transform: translate(-2%, -3%); }
-  30% { transform: translate(3%, -1%); }
-  50% { transform: translate(-1%, 2%); }
-  70% { transform: translate(2%, 3%); }
-  90% { transform: translate(-3%, 1%); }
+/* Glass card styling */
+.compile-glass {
+  background: rgba(18, 19, 24, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(216, 221, 230, 0.1);
 }
 
-.kumo-grain {
-  position: fixed;
-  top: -20%;
-  left: -20%;
-  width: 140vw;
-  height: 140vh;
-  pointer-events: none;
-  z-index: 99;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  animation: kumo-grain 0.6s steps(6) infinite;
-  mix-blend-mode: overlay;
+.compile-glass:hover {
+  border-color: rgba(255, 91, 31, 0.35);
 }
 
-/* Kumo Soft Vignette */
-.kumo-vignette {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-  background: radial-gradient(circle at 50% 50%, transparent 55%, rgba(10, 8, 7, 0.6) 100%);
-}
-
-/* Japanese Vertical Writing Mode */
-.writing-v-rl {
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-}
-
-/* Kumo Infinite Ticker */
+/* Infinite Marquee */
 @keyframes marquee {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
@@ -94,59 +67,9 @@
 .animate-marquee {
   display: flex;
   width: max-content;
-  animation: marquee 28s linear infinite;
+  animation: marquee 24s linear infinite;
 }
 
 .animate-marquee:hover {
   animation-play-state: paused;
-}
-
-/* Explicit Kumo Palette & Display Font */
-.font-display {
-  font-family: 'Amarante', serif !important;
-}
-
-.text-kumo-ink {
-  color: #1b1a19 !important;
-}
-
-.text-kumo-orange {
-  color: #e8772e !important;
-}
-
-.text-kumo-sky {
-  color: #8fb3e0 !important;
-}
-
-.text-kumo-cream {
-  color: #f3ece0 !important;
-}
-
-.bg-kumo-ink {
-  background-color: #1b1a19 !important;
-}
-
-.bg-kumo-orange {
-  background-color: #e8772e !important;
-}
-
-.bg-kumo-cream {
-  background-color: #f3ece0 !important;
-}
-
-.border-kumo-orange {
-  border-color: #e8772e !important;
-}
-
-/* Motion Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  .kumo-grain {
-    animation: none !important;
-  }
 }

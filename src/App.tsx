@@ -1,25 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Lenis from 'lenis';
 import { portfolioData } from './data/portfolioData';
-import { KumoFilmCanvas } from './components/kumo/KumoFilmCanvas';
+import { CompileCanvas } from './components/compile/CompileCanvas';
 import { Navbar } from './components/layout/Navbar';
 import { Hero } from './components/sections/Hero';
 import { Projects } from './components/sections/Projects';
 import { Skills } from './components/sections/Skills';
 import { ExperienceAndCredentials } from './components/sections/ExperienceAndCredentials';
 import { Contact } from './components/sections/Contact';
+import { useCompileStore } from './store/useCompileStore';
 
 export const App: React.FC = () => {
   const data = portfolioData;
-  const [sceneLabel, setSceneLabel] = useState<string>('SC 01');
-  const [isLightBg, setIsLightBg] = useState<boolean>(false);
+  const setScrollProgress = useCompileStore((state) => state.setScrollProgress);
+  const setCursorPos = useCompileStore((state) => state.setCursorPos);
 
   useEffect(() => {
-    // 1. Initialize Lenis Smooth Inertia Scrolling
+    // 1. Initialize Lenis Smooth Scrolling
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+    });
+
+    lenis.on('scroll', (e: any) => {
+      // Calculate global scroll progress 0.0 -> 1.0
+      const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalScrollable > 0) {
+        const progress = e.scroll / totalScrollable;
+        setScrollProgress(progress);
+      }
     });
 
     function raf(time: number) {
@@ -34,38 +44,27 @@ export const App: React.FC = () => {
       }, 120);
     }
 
+    // 2. Track mouse position for camera parallax
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPos(e.clientX, e.clientY);
+    };
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+
     return () => {
       lenis.destroy();
+      window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []);
+  }, [setScrollProgress, setCursorPos]);
 
   return (
-    <div className="relative min-h-screen bg-kumo-ink text-white overflow-x-hidden selection:bg-kumo-orange selection:text-white font-sans antialiased">
-      {/* 1. Fine Scanlines Overlay (1px line every 3px, ~6% opacity) */}
-      <div className="kumo-scanlines" />
+    <div className="relative min-h-screen bg-[#07070a] text-[#d8dde6] overflow-x-hidden selection:bg-[#ff5b1f] selection:text-black font-grotesk antialiased">
+      {/* Fixed Full-Screen Three.js Canvas with 12,000 Bits Instanced Mesh */}
+      <CompileCanvas />
 
-      {/* 2. Animated Film Grain (~5% opacity) */}
-      <div className="kumo-grain" />
+      {/* Header / HUD Navigation with Monogram [ SM ], Build Passing Pill, IST Clock */}
+      <Navbar availability={data.personal.availability} />
 
-      {/* 3. Soft Vignette */}
-      <div className="kumo-vignette" />
-
-      {/* 4. Fixed Full-Screen Canvas Scrubbing Image Sequence from /public/frames/ */}
-      <KumoFilmCanvas
-        onSceneChange={(scene, _idx, light) => {
-          setSceneLabel(scene);
-          setIsLightBg(light);
-        }}
-      />
-
-      {/* 5. Header / HUD with Corner Brackets, Live Clock & Active Scene Indicator */}
-      <Navbar
-        availability={data.personal.availability}
-        sceneLabel={sceneLabel}
-        isLight={isLightBg}
-      />
-
-      {/* 6. Landing Page Content Layer */}
+      {/* Landing Page Content Layers */}
       <main className="relative z-10">
         <Hero data={data} />
         <Projects projects={data.projects} />
@@ -78,19 +77,19 @@ export const App: React.FC = () => {
         <Contact personal={data.personal} />
       </main>
 
-      {/* 7. Minimalist Ambient Kumo Footer */}
-      <footer className="relative z-10 border-t border-white/10 py-12 bg-kumo-ink/80 backdrop-blur-md">
+      {/* Minimal COMPILE Terminal Footer */}
+      <footer className="relative z-10 border-t border-[#d8dde6]/10 py-12 bg-[#07070a]/85 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-6 sm:px-12 gap-6">
           <div className="flex items-center gap-3">
-            <span className="font-jp text-sm text-kumo-orange">雲</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
-            <span className="font-mono text-xs uppercase tracking-mono text-white/80">
-              Shivam Mishra • Full-Stack Developer & Creative Technologist
+            <span className="font-mono text-xs text-[#ff5b1f]">[ SM ]</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
+            <span className="font-mono text-xs uppercase tracking-mono text-[#d8dde6]/80">
+              Shivam Mishra • MERN Stack & Creative Technologist
             </span>
           </div>
 
-          <div className="font-mono text-[10px] uppercase tracking-mono text-white/40">
-            Rewa, MP, India • &copy; {new Date().getFullYear()} • Kumo Film Atmosphere System
+          <div className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/40">
+            Rewa, MP, India • &copy; {new Date().getFullYear()} • COMPILE ARCHITECTURE SYSTEM
           </div>
         </div>
       </footer>
