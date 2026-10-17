@@ -13,7 +13,7 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
 }) => {
   return (
     <div
-      className={`relative overflow-hidden bg-glass-surface backdrop-blur-glass border border-glass-border border-l-2 border-l-flora-lime p-7 transition-all duration-300 hover:border-l-flora-lime hover:border-glass-borderHover hover:shadow-[0_0_30px_rgba(184,245,122,0.12)] ${className}`}
+      className={`relative overflow-hidden bg-[#0a0e1e]/75 backdrop-blur-glass border border-glass-border border-l-2 border-l-flora-lime p-7 transition-all duration-300 hover:border-l-flora-lime hover:border-glass-borderHover hover:shadow-[0_0_30px_rgba(184,245,122,0.12)] ${className}`}
     >
       {/* Live Status Indicator (if present) */}
       {hasLiveDot && (

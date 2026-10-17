@@ -187,10 +187,10 @@ export const Flora3DScene: React.FC<Flora3DSceneProps> = ({ scrollProgress, mous
   });
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]}>
+    <group ref={groupRef} position={[0.7, 0.1, 0]}>
       {/* SCENE 2: Luminous Gold Core */}
       <mesh ref={goldCoreRef}>
-        <sphereGeometry args={[0.26, 32, 32]} />
+        <sphereGeometry args={[0.22, 32, 32]} />
         <meshBasicMaterial color="#ffcf6a" />
       </mesh>
 

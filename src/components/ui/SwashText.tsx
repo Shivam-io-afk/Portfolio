@@ -29,3 +29,4 @@ export const SwashText: React.FC<SwashTextProps> = ({ children, className = '' }
     </span>
   );
 };
+

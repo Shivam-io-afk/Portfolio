@@ -56,12 +56,12 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
       >
         <h1 className="font-display font-bold text-[clamp(2.75rem,8.5vw,7.5rem)] leading-[0.92] text-flora-lime uppercase tracking-tight">
           <div className="overflow-hidden">
-            <span className="block">
+            <span className="block text-flora-lime">
               <SwashText>SHIVAM</SwashText>
             </span>
           </div>
           <div className="overflow-hidden pl-8 sm:pl-20 md:pl-32">
-            <span className="block text-ice-white hover:text-flora-lime transition-colors">
+            <span className="block text-flora-lime/90 hover:text-white transition-colors">
               <SwashText>MISHRA.</SwashText>
             </span>
           </div>
