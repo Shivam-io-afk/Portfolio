@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import { portfolioData } from './data/portfolioData';
-import { FloraCanvas } from './components/3d/FloraCanvas';
+import { KumoFilmCanvas } from './components/kumo/KumoFilmCanvas';
 import { Navbar } from './components/layout/Navbar';
 import { Hero } from './components/sections/Hero';
-import { MagmaMarquee } from './components/ui/MagmaMarquee';
 import { Projects } from './components/sections/Projects';
 import { Skills } from './components/sections/Skills';
 import { ExperienceAndCredentials } from './components/sections/ExperienceAndCredentials';
@@ -12,7 +11,8 @@ import { Contact } from './components/sections/Contact';
 
 export const App: React.FC = () => {
   const data = portfolioData;
-  const [keyholeRadius, setKeyholeRadius] = useState(100);
+  const [sceneLabel, setSceneLabel] = useState<string>('SC 01');
+  const [isLightBg, setIsLightBg] = useState<boolean>(false);
 
   useEffect(() => {
     // 1. Initialize Lenis Smooth Inertia Scrolling
@@ -28,56 +28,40 @@ export const App: React.FC = () => {
     }
     requestAnimationFrame(raf);
 
-    // 2. Keyhole Mask Reveal driven by initial scroll
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      // Keyhole starts open and expands seamlessly
-      const radius = Math.min(150, 45 + scrollY * 0.35);
-      setKeyholeRadius(radius);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       lenis.destroy();
-      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
   return (
-    <div
-      className="relative min-h-screen bg-navy-night text-ice-white overflow-x-hidden selection:bg-flora-lime selection:text-black font-sans"
-      style={{
-        background: 'radial-gradient(ellipse at 50% 30%, #0a1a4a 0%, #060507 90%)',
-      }}
-    >
-      {/* 1. Global Film Grain Overlay */}
-      <div className="film-grain" />
+    <div className="relative min-h-screen bg-kumo-ink text-white overflow-x-hidden selection:bg-kumo-orange selection:text-white font-sans antialiased">
+      {/* 1. Fine Scanlines Overlay (1px line every 3px, ~6% opacity) */}
+      <div className="kumo-scanlines" />
 
-      {/* 2. Deep Nocturnal Vignette */}
-      <div className="flora-vignette" />
+      {/* 2. Animated Film Grain (~5% opacity) */}
+      <div className="kumo-grain" />
 
-      {/* 3. Diagonal Blue Light Beam */}
-      <div className="flora-light-beam" />
+      {/* 3. Soft Vignette */}
+      <div className="kumo-vignette" />
 
-      {/* 4. Faint Orange Fire Horizon Glow */}
-      <div className="flora-horizon-glow" />
-
-      {/* 5. Fixed 3D WebGL Canvas (Bloom ~1.2, Dandelion, Nebula & Iris) */}
-      <FloraCanvas />
-
-      {/* 6. Floating Glassmorphism HUD Navbar */}
-      <Navbar availability={data.personal.availability} />
-
-      {/* 7. Landing Page Content with Keyhole Mask Reveal */}
-      <main
-        className="relative z-10 keyhole-mask"
-        style={{
-          // @ts-ignore
-          '--mask-radius': `${keyholeRadius}%`,
+      {/* 4. Fixed Full-Screen Canvas Scrubbing Image Sequence from /public/frames/ */}
+      <KumoFilmCanvas
+        onSceneChange={(scene, _idx, light) => {
+          setSceneLabel(scene);
+          setIsLightBg(light);
         }}
-      >
+      />
+
+      {/* 5. Header / HUD with Corner Brackets, Live Clock & Active Scene Indicator */}
+      <Navbar
+        availability={data.personal.availability}
+        sceneLabel={sceneLabel}
+        isLight={isLightBg}
+      />
+
+      {/* 6. Landing Page Content Layer */}
+      <main className="relative z-10">
         <Hero data={data} />
-        <MagmaMarquee />
         <Projects projects={data.projects} />
         <Skills categories={data.skills} />
         <ExperienceAndCredentials
@@ -88,17 +72,19 @@ export const App: React.FC = () => {
         <Contact personal={data.personal} />
       </main>
 
-      {/* 8. Minimalist Ambient Footer */}
-      <footer className="relative z-10 border-t border-glass-border py-12 text-center text-xs font-mono text-ice-dim bg-navy-dark/80 backdrop-blur-glass">
+      {/* 7. Minimalist Ambient Kumo Footer */}
+      <footer className="relative z-10 border-t border-white/10 py-12 bg-kumo-ink/80 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-6 sm:px-12 gap-6">
-          <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 bg-flora-lime shadow-[0_0_10px_#b8f57a]" />
-            <span className="text-ice-muted font-display tracking-wideflora uppercase">
-              SHIVAM MISHRA • MERN STACK & CREATIVE TECHNOLOGIST
+          <div className="flex items-center gap-3">
+            <span className="font-jp text-sm text-kumo-orange">雲</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
+            <span className="font-mono text-xs uppercase tracking-mono text-white/80">
+              Shivam Mishra • Full-Stack Developer & Creative Technologist
             </span>
           </div>
-          <div className="text-ice-dim text-[11px] uppercase tracking-wideflora">
-            REWA, MP, INDIA • &copy; {new Date().getFullYear()} • STEMLINE RELAY FLORA PROTOCOL
+
+          <div className="font-mono text-[10px] uppercase tracking-mono text-white/40">
+            Rewa, MP, India • &copy; {new Date().getFullYear()} • Kumo Film Atmosphere System
           </div>
         </div>
       </footer>

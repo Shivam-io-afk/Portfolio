@@ -6,96 +6,99 @@
   color-scheme: dark;
 }
 
-/* Flora Custom Scrollbar */
+/* Kumo Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #060507;
+  background: #1b1a19;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(184, 245, 122, 0.35);
+  background: rgba(232, 119, 46, 0.45);
   border-radius: 9999px;
-  border: 1px solid rgba(184, 245, 122, 0.15);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(184, 245, 122, 0.7);
+  background: #e8772e;
 }
 
-/* Accessibility Focus States in Lime */
+/* Accessibility Focus States in Orange */
 *:focus-visible {
-  outline: 2px solid #b8f57a !important;
+  outline: 2px solid #e8772e !important;
   outline-offset: 3px !important;
 }
 
-/* Film Grain Overlay */
-.film-grain {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 99;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
-}
-
-/* Flora Night Navy Gradient Vignette */
-.flora-vignette {
+/* Kumo Fine Scanlines (1px line every 3px, ~6% opacity) */
+.kumo-scanlines {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(circle at 50% 40%, transparent 40%, rgba(6, 5, 7, 0.85) 100%);
+  z-index: 98;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+  opacity: 0.06;
 }
 
-/* Diagonal Blue Light Beam */
-.flora-light-beam {
+/* Kumo Animated Film Grain (~5%) */
+@keyframes kumo-grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2%, -3%); }
+  30% { transform: translate(3%, -1%); }
+  50% { transform: translate(-1%, 2%); }
+  70% { transform: translate(2%, 3%); }
+  90% { transform: translate(-3%, 1%); }
+}
+
+.kumo-grain {
   position: fixed;
   top: -20%;
-  left: -10%;
-  width: 70vw;
+  left: -20%;
+  width: 140vw;
   height: 140vh;
   pointer-events: none;
-  z-index: 1;
-  background: linear-gradient(125deg, rgba(30, 80, 220, 0.18) 0%, rgba(10, 26, 74, 0.08) 50%, transparent 75%);
-  filter: blur(50px);
-  transform: rotate(-15deg);
+  z-index: 99;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  animation: kumo-grain 0.6s steps(6) infinite;
+  mix-blend-mode: overlay;
 }
 
-/* Faint Orange Fire Horizon Glow */
-.flora-horizon-glow {
+/* Kumo Soft Vignette */
+.kumo-vignette {
   position: fixed;
-  bottom: 0;
-  inset-x: 0;
-  height: 25vh;
+  inset: 0;
   pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(ellipse at 50% 100%, rgba(255, 90, 20, 0.12) 0%, rgba(255, 60, 0, 0.04) 50%, transparent 80%);
+  z-index: 2;
+  background: radial-gradient(circle at 50% 50%, transparent 55%, rgba(10, 8, 7, 0.6) 100%);
 }
 
-/* Keyhole Mask Reveal */
-.keyhole-mask {
-  mask-image: radial-gradient(circle at 50% 50%, black var(--mask-radius, 100%), transparent calc(var(--mask-radius, 100%) + 1px));
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, black var(--mask-radius, 100%), transparent calc(var(--mask-radius, 100%) + 1px));
+/* Japanese Vertical Writing Mode */
+.writing-v-rl {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
 }
 
-/* Glass Surface Standard */
-.glass-panel {
-  background: rgba(10, 14, 30, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 2px solid #b8f57a;
+/* Kumo Infinite Ticker */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 
-/* Typography Defaults */
-h1, h2, h3, h4, .btn-uppercase {
-  font-family: 'Chakra Petch', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Motion Accessibility */
@@ -105,5 +108,8 @@ h1, h2, h3, h4, .btn-uppercase {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .kumo-grain {
+    animation: none !important;
   }
 }

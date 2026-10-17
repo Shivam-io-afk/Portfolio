@@ -7,43 +7,35 @@ export default {
   theme: {
     extend: {
       colors: {
+        kumo: {
+          orange: '#e8772e',
+          sky: '#8fb3e0',
+          cream: '#f3ece0',
+          ink: '#1b1a19',
+          border: 'rgba(255, 255, 255, 0.12)',
+          borderInk: 'rgba(27, 26, 25, 0.15)',
+        },
         flora: {
-          lime: '#b8f57a',
-          limeGlow: 'rgba(184, 245, 122, 0.45)',
-          gold: '#ffcf6a',
-          ice: '#e8f0ff',
-          stem: '#38ef7d',
+          lime: '#e8772e', // alias for backwards compat
         },
-        navy: {
-          night: '#0a1a4a',
-          dark: '#060507',
-          deep: '#040b1e',
-        },
-        glass: {
-          surface: 'rgba(10, 14, 30, 0.55)',
-          border: 'rgba(255, 255, 255, 0.08)',
-          borderHover: 'rgba(184, 245, 122, 0.4)',
-        },
-        ice: {
-          white: '#e8f0ff',
-          muted: '#8ea2c6',
-          dim: '#4f6080',
-        }
       },
       fontFamily: {
-        sans: ['"Chakra Petch"', 'sans-serif'],
-        display: ['"Chakra Petch"', 'sans-serif'],
-        script: ['"Pinyon Script"', 'cursive'],
-        mono: ['"Chakra Petch"', 'monospace'],
+        serif: ['"Amarante"', 'serif'],
+        display: ['"Amarante"', 'serif'],
+        sans: ['"Inter"', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'monospace'],
+        jp: ['"Noto Serif JP"', 'serif'],
       },
       letterSpacing: {
-        flora: '0.08em',
-        wideflora: '0.14em',
+        mono: '0.12em',
+        kumo: '0.08em',
+        wide: '0.16em',
       },
-      backdropBlur: {
-        glass: '14px',
-      }
+      boxShadow: {
+        'soft-text': '0 2px 10px rgba(0, 0, 0, 0.65)',
+        'soft-card': '0 4px 20px rgba(0, 0, 0, 0.25)',
+      },
     },
   },
   plugins: [],
-}
+};
