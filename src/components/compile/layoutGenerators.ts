@@ -58,7 +58,7 @@ export function generateLayoutPositions(count: number) {
     const disp = Math.sin(x * 3.5 + y * 2.5) * Math.cos(z * 3.5) * 0.22;
     const r = 1.85 + disp;
 
-    pos0[i * 3 + 0] = x * r + 0.95;
+    pos0[i * 3 + 0] = x * r + 1.50;
     pos0[i * 3 + 1] = y * r + 0.35;
     pos0[i * 3 + 2] = z * r;
   }

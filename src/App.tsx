@@ -19,7 +19,7 @@ import { CrosshairCursor } from './components/ui/CrosshairCursor';
 import { GitLogFooter } from './components/ui/GitLogFooter';
 import { SegmentationFault404 } from './components/ui/SegmentationFault404';
 import { MobileTiltController } from './components/ui/MobileTiltController';
-import { useCompileStore } from './store/useCompileStore';
+import { useCompileStore, StageId } from './store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -53,15 +53,39 @@ export const App: React.FC = () => {
       resizeTimer = setTimeout(updateDimensions, 150);
     };
     window.addEventListener('resize', handleResize, { passive: true });
+    ScrollTrigger.addEventListener('refresh', updateDimensions);
 
     // Refresh ScrollTrigger once after web fonts load
     document.fonts.ready.then(() => {
-      updateDimensions();
       ScrollTrigger.refresh();
+      updateDimensions();
+    });
+
+    // 5 Section ScrollTriggers: derive activeStage (0 -> 4) from section visibility
+    const stageTriggersConfig: { id: string; stage: StageId; start?: string; end?: string }[] = [
+      { id: '#hero', stage: 0, start: 'top top', end: 'bottom center' },
+      { id: '#projects', stage: 1, start: 'top center', end: 'bottom center' },
+      { id: '#skills', stage: 2, start: 'top center', end: 'bottom center' },
+      { id: '#experience', stage: 3, start: 'top center', end: 'bottom center' },
+      { id: '#contact', stage: 4, start: 'top center', end: 'bottom bottom' },
+    ];
+
+    const stageTriggers = stageTriggersConfig.map(({ id, stage, start, end }) => {
+      return ScrollTrigger.create({
+        trigger: id,
+        start: start || 'top center',
+        end: end || 'bottom center',
+        onToggle: (self) => {
+          if (self.isActive) {
+            useCompileStore.getState().setActiveStage(stage);
+          }
+        },
+      });
     });
 
     // Drive Lenis via GSAP ticker with lagSmoothing(0)
     let currentVelSplit = 0;
+    let appliedVelSplit = -1;
     const updateTicker = (time: number) => {
       lenis.raf(time * 1000);
       const scrollY = lenis.scroll || window.scrollY || 0;
@@ -73,10 +97,10 @@ export const App: React.FC = () => {
       useCompileStore.getState().setScrollVelocity(vel);
       const targetSplit = Math.min(3.5, Math.abs(vel) * 0.07);
       currentVelSplit += (targetSplit - currentVelSplit) * 0.15;
-      if (currentVelSplit > 0.03) {
-        document.documentElement.style.setProperty('--vel-split', `${currentVelSplit.toFixed(2)}px`);
-      } else {
-        document.documentElement.style.setProperty('--vel-split', '0px');
+      const roundedSplit = currentVelSplit > 0.05 ? Math.round(currentVelSplit * 10) / 10 : 0;
+      if (roundedSplit !== appliedVelSplit) {
+        appliedVelSplit = roundedSplit;
+        document.documentElement.style.setProperty('--vel-split', `${roundedSplit}px`);
       }
     };
     gsap.ticker.add(updateTicker);
@@ -154,9 +178,11 @@ export const App: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      stageTriggers.forEach((t) => t.kill());
       gsap.ticker.remove(updateTicker);
       lenis.destroy();
       window.removeEventListener('resize', handleResize);
+      ScrollTrigger.removeEventListener('refresh', updateDimensions);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('keydown', handleKeyDown);
     };

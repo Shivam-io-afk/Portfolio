@@ -113,3 +113,4 @@ export const GitLogFooter: React.FC = () => {
     </div>
   );
 };
+

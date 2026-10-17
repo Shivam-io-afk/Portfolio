@@ -174,43 +174,42 @@ export const useCompileStore = create<CompileState>((set, get) => {
 
     setScrollProgress: (progress) => {
       const clamped = Math.max(0, Math.min(1, progress));
-      (get() as any).scrollProgress = clamped;
-
-      let stage: StageId = 0;
-      if (clamped >= 0.94) stage = 4;
-      else if (clamped >= 0.52) stage = 3;
-      else if (clamped >= 0.40) stage = 2;
-      else if (clamped >= 0.08) stage = 1;
-      else stage = 0;
 
       let tower = get().activeTower;
-      if (clamped >= 0.08 && clamped < 0.39) {
-        const towerNorm = (clamped - 0.08) / 0.31;
+      if (clamped >= 0.07 && clamped < 0.38) {
+        const towerNorm = (clamped - 0.07) / 0.31;
         tower = Math.min(4, Math.max(0, Math.floor(towerNorm * 5)));
       }
 
-      if (stage !== get().activeStage || tower !== get().activeTower) {
-        // Trigger scan beam animation when stage changes
-        if (stage !== get().activeStage) {
-          get().triggerScanBeam();
-        }
-        if (tower !== get().activeTower) {
-          (get() as any).towerAssemblyProgress = 0.01;
-          let start: number | null = null;
-          const dur = 600;
-          const step = (ts: number) => {
-            if (!start) start = ts;
-            const p = Math.min(1, (ts - start) / dur);
-            (get() as any).towerAssemblyProgress = p;
-            if (p < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-        }
-        set({ scrollProgress: clamped, activeStage: stage, activeTower: tower });
+      if (Math.abs(get().scrollProgress - clamped) < 0.00001 && get().activeTower === tower) {
+        return;
       }
+
+      const updates: Partial<CompileState> = { scrollProgress: clamped };
+
+      if (tower !== get().activeTower) {
+        updates.activeTower = tower;
+        (get() as any).towerAssemblyProgress = 0.01;
+        let start: number | null = null;
+        const dur = 600;
+        const step = (ts: number) => {
+          if (!start) start = ts;
+          const p = Math.min(1, (ts - start) / dur);
+          (get() as any).towerAssemblyProgress = p;
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+
+      set(updates);
     },
 
-    setActiveStage: (stage) => set({ activeStage: stage }),
+    setActiveStage: (stage) => {
+      if (get().activeStage !== stage) {
+        get().triggerScanBeam();
+        set({ activeStage: stage });
+      }
+    },
     setActiveTower: (tower) => {
       if (tower !== get().activeTower) {
         (get() as any).towerAssemblyProgress = 0.01;
@@ -227,19 +226,9 @@ export const useCompileStore = create<CompileState>((set, get) => {
       }
     },
     openDeepDive: (projectId) => {
-      try {
-        if (typeof window !== 'undefined') {
-          window.location.hash = `#project/${projectId}`;
-        }
-      } catch {}
       set({ isDeepDiveOpen: true, activeDeepDiveId: projectId });
     },
     closeDeepDive: () => {
-      try {
-        if (typeof window !== 'undefined') {
-          window.history.pushState(null, '', window.location.pathname + window.location.search);
-        }
-      } catch {}
       set({ isDeepDiveOpen: false, activeDeepDiveId: null });
     },
 

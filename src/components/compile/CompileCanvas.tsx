@@ -63,11 +63,11 @@ const CameraRig: React.FC = () => {
     let ly = 0;
 
     if (p < 0.04) {
-      // Stage 0: Hero Fibonacci Sphere (Centered at X=0.95, Y=0.35)
+      // Stage 0: Hero Fibonacci Sphere (Centered at X=1.50, Y=0.35)
       cx += 0;
       cy += 0;
       cz = 7.6;
-      lx = 0.5;
+      lx = 1.0;
       ly = 0.2;
     } else if (p < 0.08) {
       // Transition Stage 0 -> Stage 1
@@ -75,7 +75,7 @@ const CameraRig: React.FC = () => {
       cx += THREE.MathUtils.lerp(0, 0, t);
       cy += THREE.MathUtils.lerp(0, 0.4, t);
       cz = THREE.MathUtils.lerp(7.6, 8.2, t);
-      lx = THREE.MathUtils.lerp(0.5, 2.0, t);
+      lx = THREE.MathUtils.lerp(1.0, 2.0, t);
       ly = 0.2;
     } else if (p < 0.39) {
       // Stage 1: BUILD Towers (Camera frames the active tower beside its card)
@@ -222,7 +222,7 @@ export const CompileCanvas: React.FC = () => {
           stencil: false,
           preserveDrawingBuffer: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 0.9,
+          toneMappingExposure: 0.85,
         }}
         dpr={config.dpr}
       >

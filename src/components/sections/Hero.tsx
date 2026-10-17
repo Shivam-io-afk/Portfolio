@@ -34,8 +34,8 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
 
       {/* Main Hero Body: Headline with Space Grotesk caps + Instrument Serif italic accents */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end my-auto py-8 sm:py-16">
-        {/* Left Col: Giant Name & Title (max-w 45% / 5 cols) */}
-        <div className="lg:col-span-5 max-w-[480px] xl:max-w-[520px] space-y-6">
+        {/* Left Col: Giant Name & Title (max-w 42% / <= 420px to prevent sphere overlap) */}
+        <div className="lg:col-span-5 w-full max-w-[420px] lg:max-w-[42%] space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#121318]/90 border border-[#ff5b1f]/30 font-mono text-[10px] uppercase tracking-wide text-[#ff5b1f]">
             <span>// ARCHITECTURE ENTRY POINT</span>
           </div>
@@ -117,7 +117,7 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
           <span>COMPILING PORTFOLIO PIPELINE... SCROLL TO ADVANCE</span>
         </div>
         <div className="hidden sm:block">
-          <span>LATENCY: 0.14ms · 60 FPS · GL_INSTANCING</span>
+          <span>STATUS: READY · 12K BITS · WEBGL</span>
         </div>
       </div>
     </section>

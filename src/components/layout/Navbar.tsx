@@ -58,42 +58,68 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </a>
 
-        {/* 2. Center: Nav ticks + Build Status Pill */}
-        <nav className="pointer-events-auto hidden md:flex items-center gap-6 px-5 py-2 bg-[#121318]/90 backdrop-blur-md border border-[#d8dde6]/10">
+        {/* 2. Center: Nav ticks + 5-step Progress Rail + Build Status Pill */}
+        <nav className="pointer-events-auto hidden md:flex items-center gap-5 px-5 py-2 bg-[#121318]/90 backdrop-blur-md border border-[#d8dde6]/10">
           <a
             href="#projects"
-            className="flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase text-[#d8dde6]/70 hover:text-[#ff5b1f] transition-colors"
+            className={`flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase transition-colors ${
+              activeStage === 1 ? 'text-[#ff5b1f] font-semibold' : 'text-[#d8dde6]/70 hover:text-[#ff5b1f]'
+            }`}
           >
-            <span className="text-[#ff5b1f]/70">01</span>
+            <span className={activeStage === 1 ? 'text-[#ff5b1f]' : 'text-[#ff5b1f]/70'}>01</span>
             <span>WORKS</span>
           </a>
           <span className="text-[#d8dde6]/20">·</span>
 
           <a
             href="#skills"
-            className="flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase text-[#d8dde6]/70 hover:text-[#ff5b1f] transition-colors"
+            className={`flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase transition-colors ${
+              activeStage === 2 ? 'text-[#ff5b1f] font-semibold' : 'text-[#d8dde6]/70 hover:text-[#ff5b1f]'
+            }`}
           >
-            <span className="text-[#ff5b1f]/70">02</span>
+            <span className={activeStage === 2 ? 'text-[#ff5b1f]' : 'text-[#ff5b1f]/70'}>02</span>
             <span>ARSENAL</span>
           </a>
           <span className="text-[#d8dde6]/20">·</span>
 
           <a
             href="#experience"
-            className="flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase text-[#d8dde6]/70 hover:text-[#ff5b1f] transition-colors"
+            className={`flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase transition-colors ${
+              activeStage === 3 ? 'text-[#ff5b1f] font-semibold' : 'text-[#d8dde6]/70 hover:text-[#ff5b1f]'
+            }`}
           >
-            <span className="text-[#ff5b1f]/70">03</span>
+            <span className={activeStage === 3 ? 'text-[#ff5b1f]' : 'text-[#ff5b1f]/70'}>03</span>
             <span>TRAJECTORY</span>
           </a>
           <span className="text-[#d8dde6]/20">·</span>
 
           <a
             href="#contact"
-            className="flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase text-[#d8dde6]/70 hover:text-[#ff5b1f] transition-colors"
+            className={`flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase transition-colors ${
+              activeStage === 4 ? 'text-[#ff5b1f] font-semibold' : 'text-[#d8dde6]/70 hover:text-[#ff5b1f]'
+            }`}
           >
-            <span className="text-[#ff5b1f]/70">04</span>
+            <span className={activeStage === 4 ? 'text-[#ff5b1f]' : 'text-[#ff5b1f]/70'}>04</span>
             <span>CONTACT</span>
           </a>
+
+          <div className="w-[1px] h-3.5 bg-[#d8dde6]/15 mx-1" />
+
+          {/* 5-Step Progress Rail (00 -> 04) */}
+          <div className="flex items-center gap-1" title={`Stage ${activeStage}: ${stageLabels[activeStage]}`}>
+            {[0, 1, 2, 3, 4].map((sIdx) => (
+              <div
+                key={sIdx}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  sIdx === activeStage
+                    ? 'w-4 bg-[#ff5b1f] shadow-[0_0_8px_#ff5b1f]'
+                    : sIdx < activeStage
+                    ? 'w-1.5 bg-[#ff5b1f]/50'
+                    : 'w-1.5 bg-[#d8dde6]/20'
+                }`}
+              />
+            ))}
+          </div>
 
           <div className="w-[1px] h-3.5 bg-[#d8dde6]/15 mx-1" />
 

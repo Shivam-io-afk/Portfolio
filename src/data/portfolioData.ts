@@ -72,7 +72,7 @@ export const portfolioData: PortfolioData = {
     email: "shivam.m28737@gmail.com",
     socials: {
       github: "https://github.com/Shivam-io-afk",
-      linkedin: "https://linkedin.com",
+      linkedin: "https://www.linkedin.com/in/shivam-mishra",
     },
   },
   metrics: [
@@ -95,7 +95,7 @@ export const portfolioData: PortfolioData = {
       ],
       tags: ["React.js", "Node.js", "Express.js", "MongoDB", "REST APIs", "UI/UX Design"],
       metrics: "Multi-Vendor Architecture",
-      githubUrl: "https://github.com/Shivam-io-afk",
+      githubUrl: "https://github.com/Shivam-io-afk/Onbuggy",
       featured: true,
     },
     {
@@ -112,7 +112,7 @@ export const portfolioData: PortfolioData = {
       ],
       tags: ["React.js", "Firebase Auth", "Tailwind CSS", "State Management", "JavaScript"],
       metrics: "Firebase Auth & Realtime",
-      githubUrl: "https://github.com/Shivam-io-afk/TaskMaster",
+      githubUrl: "https://github.com/Shivam-io-afk/Task-Flow",
       featured: true,
     },
     {
@@ -129,7 +129,7 @@ export const portfolioData: PortfolioData = {
       ],
       tags: ["Node.js", "Express.js", "MongoDB", "Mongoose", "EJS", "MVC Architecture"],
       metrics: "Full MVC Ledger",
-      githubUrl: "https://github.com/Shivam-io-afk/KhatabookMongoDB",
+      githubUrl: "https://github.com/Shivam-io-afk/Khatabook",
       featured: true,
     },
     {

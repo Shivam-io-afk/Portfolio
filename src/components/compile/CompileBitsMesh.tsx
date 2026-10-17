@@ -81,20 +81,20 @@ const vertexShader = `
     float s = 0.0;
     if (p < 0.04) {
       s = 0.0;
-    } else if (p < 0.08) {
-      s = smoothstep(0.04, 0.08, p);
-    } else if (p < 0.39) {
+    } else if (p < 0.07) {
+      s = smoothstep(0.04, 0.07, p);
+    } else if (p < 0.35) {
       s = 1.0;
-    } else if (p < 0.42) {
-      s = 1.0 + smoothstep(0.39, 0.42, p);
-    } else if (p < 0.51) {
+    } else if (p < 0.38) {
+      s = 1.0 + smoothstep(0.35, 0.38, p);
+    } else if (p < 0.46) {
       s = 2.0;
-    } else if (p < 0.53) {
-      s = 2.0 + smoothstep(0.51, 0.53, p);
-    } else if (p < 0.93) {
+    } else if (p < 0.49) {
+      s = 2.0 + smoothstep(0.46, 0.49, p);
+    } else if (p < 0.89) {
       s = 3.0;
-    } else if (p < 0.96) {
-      s = 3.0 + smoothstep(0.93, 0.96, p);
+    } else if (p < 0.92) {
+      s = 3.0 + smoothstep(0.89, 0.92, p);
     } else {
       s = 4.0;
     }
@@ -138,10 +138,10 @@ const vertexShader = `
     // Shockwave on click
     if (uShockwaveProgress > 0.001) {
       float waveRadius = uShockwaveProgress * 4.8;
-      float waveDist = abs(length(blendedPos - vec3(0.95, 0.35, 0.0)) - waveRadius);
+      float waveDist = abs(length(blendedPos - vec3(1.50, 0.35, 0.0)) - waveRadius);
       if (waveDist < 0.7) {
         float push = (1.0 - waveDist / 0.7) * 0.5;
-        blendedPos += normalize(blendedPos - vec3(0.95, 0.35, 0.0)) * push;
+        blendedPos += normalize(blendedPos - vec3(1.50, 0.35, 0.0)) * push;
         vIsHot = 1.0;
       }
     }
@@ -441,7 +441,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
         roughness={config.materialType === 'basic' ? undefined : 0.32}
         clearcoat={config.materialType === 'physical' ? 1.0 : undefined}
         clearcoatRoughness={config.materialType === 'physical' ? 0.1 : undefined}
-        color={new THREE.Color('#d8dde6')}
+        color={new THREE.Color('#8a929e')}
       />
     </instancedMesh>
   );

@@ -21,6 +21,7 @@ export const MonthSpine = forwardRef<MonthSpineHandle, MonthSpineProps>(
     const mobileTrackRef = useRef<HTMLDivElement>(null);
     const ringRef = useRef<SVGCircleElement>(null);
     const passedLineRef = useRef<HTMLDivElement>(null);
+    const monthRowsRef = useRef<(HTMLDivElement | null)[]>([]);
 
     useImperativeHandle(ref, () => ({
       updateProgress: (monthFloat: number, segmentProgress: number) => {
@@ -43,6 +44,30 @@ export const MonthSpine = forwardRef<MonthSpineHandle, MonthSpineProps>(
         // 4. Update passed line opacity
         if (passedLineRef.current) {
           passedLineRef.current.style.opacity = monthFloat > 0.5 ? '1' : '0.4';
+        }
+
+        // 5. Dynamic Month Label Fade: node month 100% white bold, neighbours ~60%, distant fading to 15%
+        if (monthRowsRef.current) {
+          for (let i = 0; i < SPINE_MONTHS.length; i++) {
+            const row = monthRowsRef.current[i];
+            if (!row) continue;
+            const dist = Math.abs(i - monthFloat);
+            if (dist <= 0.5) {
+              row.style.opacity = '1.0';
+              row.style.color = '#ffffff';
+              row.style.fontWeight = '700';
+            } else if (dist <= 1.5) {
+              const op = Math.max(0.50, 0.65 - (dist - 0.5) * 0.15);
+              row.style.opacity = op.toFixed(2);
+              row.style.color = '#d8dde6';
+              row.style.fontWeight = '500';
+            } else {
+              const op = Math.max(0.15, 0.45 - (dist - 1.5) * 0.08);
+              row.style.opacity = op.toFixed(2);
+              row.style.color = '#d8dde6';
+              row.style.fontWeight = '400';
+            }
+          }
         }
       },
     }));
@@ -75,12 +100,20 @@ export const MonthSpine = forwardRef<MonthSpineHandle, MonthSpineProps>(
               return (
                 <div
                   key={idx}
+                  ref={(el) => {
+                    monthRowsRef.current[idx] = el;
+                  }}
                   className="relative w-full flex items-center justify-center"
-                  style={{ height: `${ITEM_HEIGHT}px` }}
+                  style={{
+                    height: `${ITEM_HEIGHT}px`,
+                    opacity: idx === 0 ? 1 : 0.15,
+                    color: idx === 0 ? '#ffffff' : '#d8dde6',
+                    fontWeight: idx === 0 ? '700' : '400',
+                  }}
                 >
                   {/* Left Side: Month Label & Quarter */}
                   <div className="w-[110px] text-right pr-6 flex flex-col items-end">
-                    <span className="font-mono text-xs tracking-mono text-[#d8dde6]/70">
+                    <span className="font-mono text-xs tracking-mono">
                       {item.label}
                     </span>
                     <span className="font-mono text-[9px] text-[#ff5b1f]/60 tracking-widest uppercase">

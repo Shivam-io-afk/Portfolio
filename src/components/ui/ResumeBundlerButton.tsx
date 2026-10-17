@@ -93,3 +93,4 @@ export const ResumeBundlerButton: React.FC<ResumeBundlerButtonProps> = ({
     </MagneticButton>
   );
 };
+

@@ -45,8 +45,8 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
           </h2>
         </div>
         <div className="flex flex-col md:items-end gap-2">
-          <p className="text-xs sm:text-sm font-grotesk text-[#d8dde6]/70 max-w-md leading-relaxed md:text-right">
-            17 public repositories mapped into 6 language galaxies across WebGL coordinate space.
+          <p className="text-xs sm:text-sm font-grotesk text-[#d8dde6]/80 max-w-md leading-relaxed md:text-right">
+            The tools I use to design, build and ship full-stack web apps — from animated frontends to REST APIs, databases and AI API integrations.
           </p>
           <div className="flex items-center gap-2 font-mono text-[10px] tracking-mono text-[#ff5b1f]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] animate-pulse" />

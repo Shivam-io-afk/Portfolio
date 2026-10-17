@@ -61,17 +61,26 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
           const currM = MILESTONES[baseIndex];
           const nextM = MILESTONES[baseIndex + 1];
 
+          // Dwell + smooth transition between milestones:
+          // 0.0 to 0.20: dwell on current milestone's month
+          // 0.20 to 0.80: smooth glide to next milestone's month
+          // 0.80 to 1.00: dwell on next milestone's month
+          const ease = localProgress < 0.2 ? 0 : localProgress > 0.8 ? 1 : (localProgress - 0.2) / 0.6;
+          const smoothT = ease * ease * (3 - 2 * ease);
+
           // Interpolate spine month continuous float
           const monthFloat =
             currM.monthSpineIndex +
-            (nextM.monthSpineIndex - currM.monthSpineIndex) * localProgress;
+            (nextM.monthSpineIndex - currM.monthSpineIndex) * smoothT;
 
           // Zero-render direct GPU update on spine
           if (spineRef.current) {
             spineRef.current.updateProgress(monthFloat, localProgress);
           }
 
-          const closestIndex = Math.min(Math.round(rawIndex), totalMilestones - 1);
+          // Derive active milestone card: switches at midpoint so card always matches the node month
+          const targetIndex = localProgress >= 0.5 ? baseIndex + 1 : baseIndex;
+          const closestIndex = Math.min(targetIndex, totalMilestones - 1);
 
           // ONLY update React state when the milestone index actually changes (8 times total)
           if (closestIndex !== activeIndexRef.current) {

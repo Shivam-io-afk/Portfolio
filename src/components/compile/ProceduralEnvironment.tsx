@@ -16,9 +16,11 @@ export const ProceduralEnvironment: React.FC = () => {
     const room = new RoomEnvironment();
     const envTexture = pmremGenerator.fromScene(room, 0.04).texture;
     scene.environment = envTexture;
+    (scene as any).environmentIntensity = 0.6;
 
     return () => {
       scene.environment = null;
+      (scene as any).environmentIntensity = 1.0;
       envTexture.dispose();
       room.dispose();
       pmremGenerator.dispose();

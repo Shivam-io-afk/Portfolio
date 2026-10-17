@@ -217,3 +217,4 @@ const ConstellationStarAnchor: React.FC<StarAnchorProps> = ({
     </mesh>
   );
 };
+

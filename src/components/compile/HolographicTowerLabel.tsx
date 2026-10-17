@@ -71,3 +71,4 @@ export const HolographicTowerLabel: React.FC = () => {
     </group>
   );
 };
+
