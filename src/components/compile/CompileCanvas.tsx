@@ -6,7 +6,7 @@ import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
 import { CompileBitsMesh } from './CompileBitsMesh';
 import { HeroCoreStage0 } from './HeroCoreStage0';
-import { NetworkGraphEdges } from './NetworkGraphEdges';
+import { ConstellationNetwork } from './ConstellationNetwork';
 import { AtmosphereElements } from './AtmosphereElements';
 import { HolographicTowerLabel } from './HolographicTowerLabel';
 import { ProceduralEnvironment } from './ProceduralEnvironment';
@@ -229,8 +229,8 @@ export const CompileCanvas: React.FC = () => {
         {/* Stage 0 Core + Orbit Rings */}
         <HeroCoreStage0 />
 
-        {/* Stage 2 Network Graph Lines + Light Pulses */}
-        <NetworkGraphEdges />
+        {/* Stage 2 Arsenal 17-Repo Constellation Network & Galaxy Titles */}
+        <ConstellationNetwork />
 
         {/* Stage 1 Holographic Tower Label floating above active project */}
         <HolographicTowerLabel />

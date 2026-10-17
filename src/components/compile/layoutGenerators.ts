@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CONSTELLATION_REPOS, CONSTELLATION_CONNECTIONS } from '../../data/repoConstellationData';
 
 export const SKILL_CLUSTER_CENTERS = [
   new THREE.Vector3(-4.2, 2.2, 0.8),   // Frontend
@@ -21,7 +22,7 @@ export const SKILL_CLUSTER_EDGES: [number, number][] = [
 
 /**
  * Generate 5 layout position arrays for N instances.
- * Returns { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales, towerIdxs }
+ * Returns { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales, towerIdxs, repoIdxs }
  */
 export function generateLayoutPositions(count: number) {
   const pos0 = new Float32Array(count * 3);
@@ -33,6 +34,7 @@ export function generateLayoutPositions(count: number) {
   const hotFlags = new Float32Array(count);
   const scales = new Float32Array(count);
   const towerIdxs = new Float32Array(count);
+  const repoIdxs = new Float32Array(count);
 
   const goldenRatio = (1 + Math.sqrt(5)) / 2;
 
@@ -152,29 +154,45 @@ export function generateLayoutPositions(count: number) {
   }
 
   // -------------------------------------------------------------
-  // LAYOUT 2: NETWORK (Skills clusters spread wider R=4.5 - 5.0)
+  // LAYOUT 2: NETWORK (17-Repo Constellation across 6 Language Galaxies)
+  // 9350 bits form dense star clusters per repo; 2650 bits form filaments
   // -------------------------------------------------------------
+  const perRepo = Math.floor((count * 0.78) / CONSTELLATION_REPOS.length); // ~550 bits per repo
+  const clusterTotal = perRepo * CONSTELLATION_REPOS.length;
+
   for (let i = 0; i < count; i++) {
-    const inCluster = i < count * 0.72;
-    if (inCluster) {
-      const clusterIdx = i % SKILL_CLUSTER_CENTERS.length;
-      const center = SKILL_CLUSTER_CENTERS[clusterIdx];
+    if (i < clusterTotal) {
+      const rIdx = Math.min(CONSTELLATION_REPOS.length - 1, Math.floor(i / perRepo));
+      repoIdxs[i] = rIdx;
+      const repo = CONSTELLATION_REPOS[rIdx];
+      const localIdx = i % perRepo;
+      const isCore = localIdx < 45;
+
+      let rad: number;
+      if (isCore) {
+        rad = Math.pow(Math.random(), 1.5) * 0.28;
+        hotFlags[i] = 1.0; // Bright stellar core
+      } else {
+        rad = 0.18 + Math.pow(Math.random(), 0.7) * 0.82;
+      }
+
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      const rad = Math.pow(Math.random(), 0.6) * 1.35;
 
-      pos2[i * 3 + 0] = center.x + rad * Math.sin(phi) * Math.cos(theta);
-      pos2[i * 3 + 1] = center.y + rad * Math.sin(phi) * Math.sin(theta);
-      pos2[i * 3 + 2] = center.z + rad * Math.cos(phi);
+      pos2[i * 3 + 0] = repo.position[0] + rad * Math.sin(phi) * Math.cos(theta);
+      pos2[i * 3 + 1] = repo.position[1] + rad * Math.sin(phi) * Math.sin(theta);
+      pos2[i * 3 + 2] = repo.position[2] + rad * Math.cos(phi);
     } else {
-      const edge = SKILL_CLUSTER_EDGES[i % SKILL_CLUSTER_EDGES.length];
-      const pA = SKILL_CLUSTER_CENTERS[edge[0]];
-      const pB = SKILL_CLUSTER_CENTERS[edge[1]];
-      const t = (i % 100) / 100;
-      const jitter = (Math.random() - 0.5) * 0.15;
-      pos2[i * 3 + 0] = THREE.MathUtils.lerp(pA.x, pB.x, t) + jitter;
-      pos2[i * 3 + 1] = THREE.MathUtils.lerp(pA.y, pB.y, t) + jitter;
-      pos2[i * 3 + 2] = THREE.MathUtils.lerp(pA.z, pB.z, t) + jitter;
+      repoIdxs[i] = 25.0; // Filament / connector bit
+      const edge = CONSTELLATION_CONNECTIONS[(i - clusterTotal) % CONSTELLATION_CONNECTIONS.length];
+      const repoA = CONSTELLATION_REPOS[edge[0]];
+      const repoB = CONSTELLATION_REPOS[edge[1]];
+      const t = ((i - clusterTotal) % 80) / 80;
+      const jitter = (Math.random() - 0.5) * 0.08;
+
+      pos2[i * 3 + 0] = THREE.MathUtils.lerp(repoA.position[0], repoB.position[0], t) + jitter;
+      pos2[i * 3 + 1] = THREE.MathUtils.lerp(repoA.position[1], repoB.position[1], t) + jitter;
+      pos2[i * 3 + 2] = THREE.MathUtils.lerp(repoA.position[2], repoB.position[2], t) + jitter;
     }
   }
 
@@ -230,5 +248,5 @@ export function generateLayoutPositions(count: number) {
     }
   }
 
-  return { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales, towerIdxs };
+  return { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales, towerIdxs, repoIdxs };
 }

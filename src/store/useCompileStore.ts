@@ -28,6 +28,10 @@ export interface CompileState {
   towerAssemblyProgress: number; // 0.0 -> 1.0
   openDeepDive: (projectId: string) => void;
   closeDeepDive: () => void;
+
+  // Phase 4: Arsenal Repo Constellation
+  hoveredRepoId: string | null;
+  setHoveredRepoId: (id: string | null) => void;
   
   setScrollProgress: (progress: number) => void;
   setActiveStage: (stage: StageId) => void;
@@ -80,6 +84,9 @@ export const useCompileStore = create<CompileState>((set, get) => {
     activeDeepDiveId: null,
     isDeepDiveOpen: false,
     towerAssemblyProgress: 1.0,
+
+    hoveredRepoId: null,
+    setHoveredRepoId: (id) => set({ hoveredRepoId: id }),
 
     terminalLogs: [
       'INIT_SYSTEM: Initializing runtime pipeline...',
@@ -269,3 +276,8 @@ export const useCompileStore = create<CompileState>((set, get) => {
     },
   };
 });
+
+if (typeof window !== 'undefined') {
+  (window as any).__compileStore = useCompileStore;
+}
+

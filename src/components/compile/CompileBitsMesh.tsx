@@ -6,6 +6,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { QualityTier, TIER_CONFIGS } from '../../config/gpuTiers';
 import { generateLayoutPositions } from './layoutGenerators';
 import { generateTextBitPositions } from './textToBits';
+import { getReposForSkill, CONSTELLATION_REPOS } from '../../data/repoConstellationData';
 import { useCompileStore } from '../../store/useCompileStore';
 
 interface CompileBitsMeshProps {
@@ -19,7 +20,7 @@ const vertexShader = `
   attribute vec3 aPos3;
   attribute vec3 aPos4;
   attribute vec3 aPosText;
-  attribute vec4 aParams; // x: seed, y: isHot, z: scale, w: towerIdx
+  attribute vec4 aParams; // x: seed, y: isHot, z: scale, w: towerIdx + repoIdx * 10
 
   uniform float uScrollProgress;
   uniform float uTime;
@@ -29,9 +30,11 @@ const vertexShader = `
   uniform float uShockwaveProgress;
   uniform float uScanBeamProgress;
   uniform float uTextMorph;
+  uniform float uRepoHighlight[17];
 
   varying float vIsHot;
   varying float vIsActiveTower;
+  varying float vIsRepoHighlight;
   varying vec3 vWorldPos;
 
   vec3 morphBetween(vec3 pA, vec3 pB, float t, float seed) {
@@ -47,9 +50,21 @@ const vertexShader = `
     float aSeed = aParams.x;
     float aIsHot = aParams.y;
     float aScale = aParams.z;
-    float aTowerIdx = aParams.w;
+    float aTowerIdx = mod(aParams.w, 10.0);
+    float aRepoIdx = floor(aParams.w / 10.0);
 
     vIsHot = aIsHot;
+
+    // Constellation repo highlight in Stage 2
+    float repoHigh = 0.0;
+    int rIdx = int(aRepoIdx);
+    for (int j = 0; j < 17; j++) {
+      if (j == rIdx) {
+        repoHigh = uRepoHighlight[j];
+        break;
+      }
+    }
+    vIsRepoHighlight = repoHigh;
 
     float p = clamp(uScrollProgress, 0.0, 1.0);
 
@@ -142,6 +157,15 @@ const vertexShader = `
       blendedPos = mix(blendedPos, aPosText, ease);
     }
 
+    // Highlighted constellation repo burst & scale
+    float activeScale = aScale;
+    if (repoHigh > 0.01) {
+      activeScale *= (1.0 + repoHigh * 1.1);
+      float burstWave = sin(uTime * 9.0 + aSeed * 6.28) * 0.14 * repoHigh;
+      blendedPos += normalize(blendedPos + vec3(0.001)) * burstWave;
+      vIsHot = 1.0;
+    }
+
     // Subtle micro-float
     blendedPos += vec3(
       sin(uTime * 0.6 + aSeed * 6.28) * 0.02,
@@ -153,7 +177,7 @@ const vertexShader = `
     vec4 mvPos = modelViewMatrix * vec4(blendedPos, 1.0);
     float cull = (mvPos.z > -0.3 || mvPos.z < -35.0) ? 0.0 : 1.0;
 
-    vec3 transformedPos = position * (aScale * cull) + blendedPos;
+    vec3 transformedPos = position * (activeScale * cull) + blendedPos;
     csm_Position = transformedPos;
     vWorldPos = transformedPos;
   }
@@ -162,12 +186,16 @@ const vertexShader = `
 const fragmentShader = `
   varying float vIsHot;
   varying float vIsActiveTower;
+  varying float vIsRepoHighlight;
   varying vec3 vWorldPos;
   uniform float uTime;
   uniform float uScanBeamProgress;
 
   void main() {
-    if (vIsHot > 0.5) {
+    if (vIsRepoHighlight > 0.01) {
+      float burstGlow = 1.2 + 0.6 * sin(uTime * 8.0 + vWorldPos.x * 3.0);
+      csm_Emissive = vec3(1.0, 0.42, 0.12) * 3.2 * burstGlow * vIsRepoHighlight;
+    } else if (vIsHot > 0.5) {
       float pulse = 0.85 + 0.25 * sin(uTime * 3.0 + vWorldPos.x * 2.0);
       csm_Emissive = vec3(1.0, 0.357, 0.12) * 2.4 * pulse;
     } else if (vIsActiveTower > 0.5) {
@@ -229,7 +257,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
       params[i * 4 + 0] = data.seeds[i];
       params[i * 4 + 1] = data.hotFlags[i];
       params[i * 4 + 2] = data.scales[i];
-      params[i * 4 + 3] = data.towerIdxs[i];
+      params[i * 4 + 3] = data.towerIdxs[i] + (data.repoIdxs ? data.repoIdxs[i] * 10.0 : 0);
     }
     instGeo.setAttribute('aParams', new THREE.InstancedBufferAttribute(params, 4));
 
@@ -242,6 +270,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
       uShockwaveProgress: { value: 0 },
       uScanBeamProgress: { value: 0 },
       uTextMorph: { value: 0 },
+      uRepoHighlight: { value: new Float32Array(17) },
     };
 
     return { geometry: instGeo, uniforms };
@@ -261,7 +290,24 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
         scanBeamProgress,
         textSpellProgress,
         textSpellTarget,
+        hoveredSkillNode,
+        hoveredRepoId,
       } = useCompileStore.getState();
+
+      // Constellation repo highlighting in Stage 2
+      const highlightArr = materialRef.current.uniforms.uRepoHighlight.value as Float32Array;
+      let activeIndices: number[] = [];
+      if (hoveredSkillNode) {
+        activeIndices = getReposForSkill(hoveredSkillNode);
+      } else if (hoveredRepoId) {
+        const repo = CONSTELLATION_REPOS.find((r) => r.id === hoveredRepoId);
+        if (repo) activeIndices = [repo.index];
+      }
+
+      for (let r = 0; r < 17; r++) {
+        const target = activeIndices.includes(r) ? 1.0 : 0.0;
+        highlightArr[r] = THREE.MathUtils.damp(highlightArr[r], target, 12.0, delta);
+      }
 
       // Swap text buffer if spell target changed
       if (currentTextTargetRef.current !== textSpellTarget) {
