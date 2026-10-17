@@ -5,9 +5,10 @@ import CustomShaderMaterial from 'three-custom-shader-material';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { generateLayoutPositions } from './layoutGenerators';
 import { useCompileStore } from '../../store/useCompileStore';
+import { TIER_CONFIGS, QualityTier } from '../../config/gpuTiers';
 
 interface CompileBitsMeshProps {
-  count?: number;
+  tier: QualityTier;
 }
 
 const vertexShader = `
@@ -27,9 +28,8 @@ const vertexShader = `
 
   varying float vIsHot;
   varying vec3 vWorldPos;
-  varying float vStaggerT;
 
-  // Simplex-style 3D curl approximation
+  // Fast procedural curl approximation
   vec3 curlNoise(vec3 p) {
     float x = sin(p.y * 3.0 + uTime * 0.8) * cos(p.z * 2.5);
     float y = sin(p.z * 3.0 + uTime * 0.9) * cos(p.x * 2.5);
@@ -37,11 +37,9 @@ const vertexShader = `
     return vec3(x, y, z);
   }
 
-  // Linear blend between 2 stages with staggered progress & curl offset
   vec3 morphBetween(vec3 pStart, vec3 pEnd, float segProg, float seed) {
     float t = smoothstep(0.0, 1.0, clamp((segProg * 1.6) - seed * 0.6, 0.0, 1.0));
     vec3 mid = mix(pStart, pEnd, t);
-    // Curl noise offset scaled by sin(pi * t) * 0.8
     float swirl = sin(3.14159265 * t);
     vec3 curl = curlNoise(mid * 0.7) * swirl * 0.8;
     return mid + curl;
@@ -50,11 +48,6 @@ const vertexShader = `
   void main() {
     vIsHot = aIsHot;
 
-    // Segment progress across 4 transitions:
-    // 0: 0.00 -> 0.25 (p0 -> p1)
-    // 1: 0.25 -> 0.50 (p1 -> p2)
-    // 2: 0.50 -> 0.75 (p2 -> p3)
-    // 3: 0.75 -> 1.00 (p3 -> p4)
     float p = clamp(uScrollProgress, 0.0, 1.0);
     float stageFloat = p * 4.0;
     int stageIdx = int(floor(stageFloat));
@@ -73,17 +66,15 @@ const vertexShader = `
       blendedPos = morphBetween(aPos3, aPos4, segProg, aSeed);
     }
 
-    // Gentle micro-float idle oscillation
+    // Micro-float idle
     blendedPos += vec3(
-      sin(uTime * 0.7 + aSeed * 6.28) * 0.03,
-      cos(uTime * 0.6 + aSeed * 4.14) * 0.03,
-      sin(uTime * 0.8 + aSeed * 3.14) * 0.03
+      sin(uTime * 0.6 + aSeed * 6.28) * 0.025,
+      cos(uTime * 0.5 + aSeed * 4.14) * 0.025,
+      sin(uTime * 0.7 + aSeed * 3.14) * 0.025
     );
 
-    // Apply instanced scale + transformed vertex
     vec3 transformedPos = position * aScale + blendedPos;
     csm_Position = transformedPos;
-
     vWorldPos = transformedPos;
   }
 `;
@@ -94,27 +85,35 @@ const fragmentShader = `
   uniform float uTime;
 
   void main() {
-    // If instance is tagged hot, boost emissive signal orange (#ff5b1f)
     if (vIsHot > 0.5) {
       float pulse = 0.85 + 0.25 * sin(uTime * 3.0 + vWorldPos.x * 2.0);
-      csm_Emissive = vec3(1.0, 0.357, 0.12) * 2.6 * pulse;
+      csm_Emissive = vec3(1.0, 0.357, 0.12) * 2.4 * pulse;
     }
   }
 `;
 
-export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ count = 12000 }) => {
+export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<any>(null);
 
   const scrollProgress = useCompileStore((state) => state.scrollProgress);
   const activeTower = useCompileStore((state) => state.activeTower);
 
-  // Compute geometry & buffers
-  const { geometry, uniforms } = useMemo(() => {
-    // Base box geometry: RoundedBoxGeometry(1, 1, 1, 2, 0.15)
-    const baseGeo = new RoundedBoxGeometry(1, 1, 1, 2, 0.15);
-    const instGeo = new THREE.InstancedBufferGeometry().copy(baseGeo as any);
+  const config = TIER_CONFIGS[tier];
+  const count = config.bitCount;
 
+  // Compute geometry & buffers based on Tier
+  const { geometry, uniforms } = useMemo(() => {
+    let baseGeo: THREE.BufferGeometry;
+    if (config.boxSegments > 0) {
+      // Rounded box on HIGH tier with segments = 1
+      baseGeo = new RoundedBoxGeometry(1, 1, 1, 1, 0.15);
+    } else {
+      // 12 triangles BoxGeometry for MEDIUM/LOW (massive vertex saving)
+      baseGeo = new THREE.BoxGeometry(1, 1, 1);
+    }
+
+    const instGeo = new THREE.InstancedBufferGeometry().copy(baseGeo as any);
     const data = generateLayoutPositions(count);
 
     instGeo.setAttribute('aPos0', new THREE.InstancedBufferAttribute(data.pos0, 3));
@@ -134,43 +133,53 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ count = 12000 
     };
 
     return { geometry: instGeo, uniforms };
-  }, [count]);
+  }, [count, config.boxSegments]);
 
-  // Frame tick updates
+  // Frame tick updates using MathUtils.damp for silky smooth interpolation
   useFrame((_, delta) => {
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value += delta;
-      // Smooth lerp to scrollProgress
-      materialRef.current.uniforms.uScrollProgress.value = THREE.MathUtils.lerp(
+      // Damped smooth transition
+      materialRef.current.uniforms.uScrollProgress.value = THREE.MathUtils.damp(
         materialRef.current.uniforms.uScrollProgress.value,
         scrollProgress,
-        0.12
+        4.0,
+        delta
       );
       materialRef.current.uniforms.uActiveTower.value = activeTower;
     }
 
     if (meshRef.current) {
-      // Slow global rotation of the whole field
-      meshRef.current.rotation.y += delta * 0.02;
+      meshRef.current.rotation.y += delta * 0.015;
     }
   });
+
+  // Base material selection according to tier
+  const BaseMaterial =
+    config.materialType === 'physical'
+      ? THREE.MeshPhysicalMaterial
+      : config.materialType === 'standard'
+      ? THREE.MeshStandardMaterial
+      : THREE.MeshBasicMaterial;
+
+  const CSMComponent = CustomShaderMaterial as any;
 
   return (
     <instancedMesh
       ref={meshRef}
       args={[geometry, undefined, count]}
-      frustumCulled={false}
+      frustumCulled={false} // Ensure single draw call without CPU frustum tests
     >
-      <CustomShaderMaterial
+      <CSMComponent
         ref={materialRef}
-        baseMaterial={THREE.MeshPhysicalMaterial}
+        baseMaterial={BaseMaterial}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         uniforms={uniforms}
-        metalness={1.0}
-        roughness={0.18}
-        clearcoat={1.0}
-        clearcoatRoughness={0.1}
+        metalness={config.materialType === 'basic' ? undefined : 1.0}
+        roughness={config.materialType === 'basic' ? undefined : 0.2}
+        clearcoat={config.materialType === 'physical' ? 1.0 : undefined}
+        clearcoatRoughness={config.materialType === 'physical' ? 0.1 : undefined}
         color={new THREE.Color('#d8dde6')}
       />
     </instancedMesh>

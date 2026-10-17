@@ -16,45 +16,45 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
   education,
 }) => {
   return (
-    <section id="experience" className="relative py-28 px-6 sm:px-12 max-w-7xl mx-auto z-10">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+    <section id="experience" className="relative py-28 px-4 sm:px-10 max-w-7xl mx-auto z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 items-start">
         {/* Left Column: Field Experience + Certifications */}
-        <div className="space-y-16">
+        <div className="space-y-12 sm:space-y-16">
           {/* Experience */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-kumo-orange mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
-              <span>SCENE 04 // TRAJECTORY & EXPERIENCE</span>
+            <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
+              <span>STAGE 03 /// RUNTIME.TRAJECTORY</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-5xl text-white tracking-tight mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+            <h2 className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-8">
               <ScatterText>Field Experience.</ScatterText>
             </h2>
 
-            <div className="p-6 sm:p-8 bg-kumo-ink/80 backdrop-blur-md border border-white/10 shadow-soft-card space-y-0 divide-y divide-white/15">
+            <div className="compile-card p-6 sm:p-8 space-y-0 divide-y divide-[#d8dde6]/10">
               {experience.map((exp, idx) => (
                 <div key={idx} className="py-6 first:pt-0 last:pb-0 group">
                   <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
                     <div className="flex items-baseline gap-3">
-                      <span className="font-mono text-xs text-kumo-orange font-bold">
+                      <span className="font-mono text-xs text-[#ff5b1f] font-bold">
                         {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <h3 className="font-display text-xl sm:text-2xl text-white group-hover:text-kumo-orange transition-colors">
+                      <h3 className="font-grotesk text-lg sm:text-xl text-white group-hover:text-[#ff5b1f] transition-colors font-semibold">
                         {exp.role}
                       </h3>
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-mono text-white/50 border border-white/10 px-2 py-0.5">
+                    <span className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60 border border-[#d8dde6]/10 px-2 py-0.5">
                       {exp.period}
                     </span>
                   </div>
 
-                  <ul className="space-y-2 mt-4 text-xs font-sans text-white/80 leading-relaxed list-none pl-6 border-l border-white/15">
+                  <ul className="space-y-2 mt-4 text-xs font-grotesk text-[#d8dde6]/80 leading-relaxed list-none pl-5 border-l border-[#ff5b1f]/30">
                     {exp.points.map((pt, pIdx) => (
-                      <li key={pIdx} className="relative before:content-['—'] before:absolute before:-left-5 before:text-kumo-orange">
+                      <li key={pIdx} className="relative before:content-['—'] before:absolute before:-left-4 before:text-[#ff5b1f]">
                         <span>{pt}</span>
                       </li>
                     ))}
@@ -66,28 +66,31 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
 
           {/* Certifications */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
-            <h3 className="font-display text-2xl sm:text-3xl text-white tracking-tight mb-6 flex items-center gap-2">
+            <h3 className="font-grotesk text-2xl sm:text-3xl text-white font-bold tracking-tight mb-6">
               <ScatterText>Verified Credentials.</ScatterText>
             </h3>
 
-            <div className="p-6 sm:p-8 bg-kumo-ink/80 backdrop-blur-md border border-white/10 shadow-soft-card space-y-0 divide-y divide-white/15">
+            <div className="compile-card p-6 sm:p-8 space-y-0 divide-y divide-[#d8dde6]/10">
               {certifications.map((cert, idx) => (
-                <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                <div
+                  key={idx}
+                  className="py-4 first:pt-0 last:pb-0 flex items-center justify-between group hover:bg-white/[0.02] transition-colors"
+                >
                   <div className="pr-4">
                     <div className="flex items-baseline gap-2">
-                      <span className="font-mono text-[10px] text-kumo-orange">
+                      <span className="font-mono text-[10px] text-[#ff5b1f]">
                         {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <h4 className="font-display text-base sm:text-lg text-white group-hover:text-kumo-orange transition-colors">
+                      <h4 className="font-grotesk text-sm sm:text-base text-white group-hover:text-[#ff5b1f] transition-colors font-medium">
                         {cert.title}
                       </h4>
                     </div>
-                    <div className="font-mono text-[10px] uppercase tracking-mono text-white/50 mt-1 pl-5">
+                    <div className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/50 mt-1 pl-4">
                       {cert.issuer} {cert.date && `• ${cert.date}`}
                     </div>
                   </div>
@@ -97,10 +100,10 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
                       href={cert.verificationUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1 border border-white/15 hover:border-kumo-orange text-white hover:text-kumo-orange font-mono text-[10px] uppercase tracking-mono transition-all shrink-0"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 border border-[#d8dde6]/20 hover:border-[#ff5b1f] text-white hover:text-[#ff5b1f] font-mono text-[10px] uppercase tracking-mono transition-all shrink-0"
                     >
                       <span>Verify</span>
-                      <ArrowUpRight className="w-3 h-3 text-kumo-orange" />
+                      <ArrowUpRight className="w-3 h-3 text-[#ff5b1f]" />
                     </a>
                   )}
                 </div>
@@ -111,44 +114,44 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
 
         {/* Right Column: Education */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-kumo-orange mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-kumo-orange" />
+          <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
             <span>ACADEMIC FOUNDATIONS</span>
           </div>
-          <h2 className="font-display text-3xl sm:text-5xl text-white tracking-tight mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+          <h2 className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-8">
             <ScatterText>Education History.</ScatterText>
           </h2>
 
-          <div className="p-6 sm:p-8 bg-kumo-ink/80 backdrop-blur-md border border-white/10 shadow-soft-card space-y-0 divide-y divide-white/15">
+          <div className="compile-card p-6 sm:p-8 space-y-0 divide-y divide-[#d8dde6]/10">
             {education.map((edu, idx) => (
               <div key={idx} className="py-5 first:pt-0 last:pb-0 group">
                 <div className="flex items-baseline justify-between gap-3">
                   <div className="flex items-baseline gap-3">
-                    <span className="font-mono text-xs text-kumo-orange font-bold">
+                    <span className="font-mono text-xs text-[#ff5b1f] font-bold">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div>
-                      <h3 className="font-display text-xl sm:text-2xl text-white group-hover:text-kumo-orange transition-colors">
+                      <h3 className="font-grotesk text-lg sm:text-xl text-white group-hover:text-[#ff5b1f] transition-colors font-semibold">
                         {edu.degree}
                       </h3>
-                      <p className="font-sans text-xs text-white/60 mt-0.5">
+                      <p className="font-grotesk text-xs text-[#d8dde6]/60 mt-0.5">
                         {edu.institution}
                       </p>
                     </div>
                   </div>
-                  <span className="font-mono text-[10px] sm:text-xs text-kumo-orange font-semibold border border-kumo-orange/30 px-2 py-0.5 shrink-0">
+                  <span className="font-mono text-[10px] sm:text-xs text-[#ff5b1f] font-semibold border border-[#ff5b1f]/30 px-2 py-0.5 shrink-0 bg-[#ff5b1f]/10">
                     {edu.score}
                   </span>
                 </div>
 
-                <div className="mt-3 pl-7 flex items-center justify-between text-[10px] font-mono tracking-mono text-white/40 uppercase">
+                <div className="mt-3 pl-6 flex items-center justify-between text-[10px] font-mono tracking-mono text-[#d8dde6]/40 uppercase">
                   <span>TIMELINE</span>
-                  <span className="text-white/60">{edu.period}</span>
+                  <span className="text-[#d8dde6]/70">{edu.period}</span>
                 </div>
               </div>
             ))}

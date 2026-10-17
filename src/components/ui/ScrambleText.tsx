@@ -50,3 +50,4 @@ export const ScrambleText: React.FC<ScrambleTextProps> = ({
 
   return <span className={className}>{displayText}</span>;
 };
+

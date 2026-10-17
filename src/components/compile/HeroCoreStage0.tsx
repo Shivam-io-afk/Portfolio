@@ -95,3 +95,4 @@ export const HeroCoreStage0: React.FC = () => {
     </group>
   );
 };
+

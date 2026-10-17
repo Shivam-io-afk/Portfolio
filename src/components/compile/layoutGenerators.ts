@@ -1,5 +1,24 @@
 import * as THREE from 'three';
 
+export const SKILL_CLUSTER_CENTERS = [
+  new THREE.Vector3(-4.2, 2.2, 0.8),   // Frontend
+  new THREE.Vector3(4.0, 2.4, -0.6),   // Backend & DB
+  new THREE.Vector3(-3.2, -2.6, 1.4),  // Languages
+  new THREE.Vector3(3.6, -2.2, 1.2),   // Emerging AI
+  new THREE.Vector3(0, 3.8, -1.6),     // Tools
+];
+
+export const SKILL_CLUSTER_EDGES: [number, number][] = [
+  [0, 1], // Frontend <-> Backend
+  [0, 2], // Frontend <-> Languages
+  [1, 3], // Backend <-> AI
+  [2, 3], // Languages <-> AI
+  [0, 4], // Frontend <-> Tools
+  [1, 4], // Backend <-> Tools
+  [2, 4], // Languages <-> Tools
+  [3, 4], // AI <-> Tools
+];
+
 /**
  * Generate 5 layout position arrays for N instances.
  * Returns { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales }
@@ -29,7 +48,7 @@ export function generateLayoutPositions(count: number) {
     // Fibonacci sphere distribution
     const y = 1 - (i / (count - 1)) * 2; // -1 to 1
     const radiusAtY = Math.sqrt(Math.max(0, 1 - y * y));
-    const theta = 2 * Math.PI * i / goldenRatio;
+    const theta = (2 * Math.PI * i) / goldenRatio;
 
     const x = Math.cos(theta) * radiusAtY;
     const z = Math.sin(theta) * radiusAtY;
@@ -44,11 +63,11 @@ export function generateLayoutPositions(count: number) {
   }
 
   // -------------------------------------------------------------
-  // LAYOUT 1: BUILD (4 Towers along X on reflective floor Y=0)
-  // Tower 0: Onbuggy shop ring (X = -4.5)
-  // Tower 1: TaskFlow kanban columns (X = -1.5)
-  // Tower 2: Khatabook ledger page fan (X = 1.5)
-  // Tower 3: Zoom 3x3 screen grid (X = 4.5)
+  // LAYOUT 1: BUILD (4 Towers along X on floor Y=0)
+  // Tower 0: Onbuggy shop ring (X = -5.0)
+  // Tower 1: TaskFlow kanban columns (X = -1.8)
+  // Tower 2: Khatabook ledger page fan (X = 1.8)
+  // Tower 3: Zoom 3x3 screen grid (X = 5.0)
   // -------------------------------------------------------------
   const perTower = Math.floor(count / 4);
   for (let i = 0; i < count; i++) {
@@ -60,34 +79,34 @@ export function generateLayoutPositions(count: number) {
 
     if (towerIdx === 0) {
       // Onbuggy: Shop circular ring tower
-      const angle = norm * Math.PI * 16; // multiple ring wraps
-      const ringRadius = 1.0 + Math.sin(norm * 20) * 0.2;
-      x = -4.5 + Math.cos(angle) * ringRadius;
-      y = norm * 5.5 - 2.5;
+      const angle = norm * Math.PI * 18;
+      const ringRadius = 1.1 + Math.sin(norm * 22) * 0.25;
+      x = -5.0 + Math.cos(angle) * ringRadius;
+      y = norm * 6.0 - 2.8;
       z = Math.sin(angle) * ringRadius;
     } else if (towerIdx === 1) {
       // TaskFlow: 3 kanban columns
       const col = localIdx % 3;
       const colHeight = Math.floor(localIdx / 3) / (perTower / 3);
-      x = -1.5 + (col - 1) * 0.6 + (Math.random() - 0.5) * 0.15;
-      y = colHeight * 5.5 - 2.5;
-      z = (Math.random() - 0.5) * 0.6;
+      x = -1.8 + (col - 1) * 0.7 + (Math.random() - 0.5) * 0.15;
+      y = colHeight * 6.0 - 2.8;
+      z = (Math.random() - 0.5) * 0.7;
     } else if (towerIdx === 2) {
       // Khatabook: Ledger page fan
-      const fanAngle = (norm - 0.5) * 1.2;
-      const fanRad = 1.2 * (0.3 + (localIdx % 10) * 0.08);
-      x = 1.5 + Math.sin(fanAngle) * fanRad;
-      y = norm * 5.5 - 2.5;
-      z = Math.cos(fanAngle) * fanRad * 0.6;
+      const fanAngle = (norm - 0.5) * 1.4;
+      const fanRad = 1.3 * (0.3 + (localIdx % 10) * 0.08);
+      x = 1.8 + Math.sin(fanAngle) * fanRad;
+      y = norm * 6.0 - 2.8;
+      z = Math.cos(fanAngle) * fanRad * 0.7;
     } else {
       // Zoom: 3x3 screen grid array
       const cell = localIdx % 9;
       const row = Math.floor(cell / 3);
       const col = cell % 3;
       const depth = Math.floor(localIdx / 9) / (perTower / 9);
-      x = 4.5 + (col - 1) * 0.55 + (Math.random() - 0.5) * 0.1;
-      y = (row - 1) * 0.8 + depth * 3.5 - 1.5;
-      z = (Math.random() - 0.5) * 0.4;
+      x = 5.0 + (col - 1) * 0.6 + (Math.random() - 0.5) * 0.1;
+      y = (row - 1) * 0.9 + depth * 3.8 - 1.6;
+      z = (Math.random() - 0.5) * 0.5;
     }
 
     pos1[i * 3 + 0] = x;
@@ -96,36 +115,29 @@ export function generateLayoutPositions(count: number) {
   }
 
   // -------------------------------------------------------------
-  // LAYOUT 2: NETWORK (Skills clusters on Fibonacci sphere R=4.0)
+  // LAYOUT 2: NETWORK (Skills clusters spread wider R=4.5 - 5.0)
   // -------------------------------------------------------------
-  const clusterCenters = [
-    new THREE.Vector3(-2.8, 1.8, 0.5),   // Frontend
-    new THREE.Vector3(2.5, 1.6, -0.6),   // Backend & DB
-    new THREE.Vector3(-1.8, -1.8, 1.2),  // Languages
-    new THREE.Vector3(2.4, -1.5, 0.8),   // Emerging AI
-    new THREE.Vector3(0, 2.6, -1.2),     // Tools
-  ];
-
   for (let i = 0; i < count; i++) {
     // 70% in skill cluster clouds, 30% along interconnecting arcs
     const inCluster = i < count * 0.72;
     if (inCluster) {
-      const clusterIdx = i % clusterCenters.length;
-      const center = clusterCenters[clusterIdx];
-      // Gaussian-ish ball
+      const clusterIdx = i % SKILL_CLUSTER_CENTERS.length;
+      const center = SKILL_CLUSTER_CENTERS[clusterIdx];
+      // Gaussian cluster distribution
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      const rad = Math.pow(Math.random(), 0.6) * 1.1;
+      const rad = Math.pow(Math.random(), 0.6) * 1.35; // Wider spread
 
       pos2[i * 3 + 0] = center.x + rad * Math.sin(phi) * Math.cos(theta);
       pos2[i * 3 + 1] = center.y + rad * Math.sin(phi) * Math.sin(theta);
       pos2[i * 3 + 2] = center.z + rad * Math.cos(phi);
     } else {
       // Along line segments between cluster pairs
-      const pA = clusterCenters[i % clusterCenters.length];
-      const pB = clusterCenters[(i + 1) % clusterCenters.length];
+      const edge = SKILL_CLUSTER_EDGES[i % SKILL_CLUSTER_EDGES.length];
+      const pA = SKILL_CLUSTER_CENTERS[edge[0]];
+      const pB = SKILL_CLUSTER_CENTERS[edge[1]];
       const t = (i % 100) / 100;
-      const jitter = (Math.random() - 0.5) * 0.2;
+      const jitter = (Math.random() - 0.5) * 0.15;
       pos2[i * 3 + 0] = THREE.MathUtils.lerp(pA.x, pB.x, t) + jitter;
       pos2[i * 3 + 1] = THREE.MathUtils.lerp(pA.y, pB.y, t) + jitter;
       pos2[i * 3 + 2] = THREE.MathUtils.lerp(pA.z, pB.z, t) + jitter;
@@ -143,11 +155,11 @@ export function generateLayoutPositions(count: number) {
     const y = progress * 14.0 - 7.0; // from -7 to +7
 
     // Also inject 4 milestone torus rings at y = -4, -1.5, 1.5, 4.5
-    const isRing = (i % 30 < 4);
+    const isRing = i % 30 < 4;
     if (isRing) {
       const ringHeights = [-4.2, -1.4, 1.6, 4.4];
       const targetH = ringHeights[i % ringHeights.length];
-      const ringAngle = (i % 60) * (Math.PI * 2 / 60);
+      const ringAngle = (i % 60) * ((Math.PI * 2) / 60);
       pos3[i * 3 + 0] = Math.cos(ringAngle) * 2.3;
       pos3[i * 3 + 1] = targetH + (Math.random() - 0.5) * 0.15;
       pos3[i * 3 + 2] = Math.sin(ringAngle) * 2.3;

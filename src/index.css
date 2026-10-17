@@ -32,7 +32,7 @@
   outline-offset: 3px !important;
 }
 
-/* Hairline border utility */
+/* Hairline border utilities */
 .hairline-b {
   border-bottom: 1px solid rgba(216, 221, 230, 0.1);
 }
@@ -46,30 +46,22 @@
   border-right: 1px solid rgba(216, 221, 230, 0.1);
 }
 
-/* Glass card styling */
-.compile-glass {
-  background: rgba(18, 19, 24, 0.65);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+/* High-performance Solid Card Styling (Replaces expensive backdrop-filter) */
+.compile-card {
+  background: rgba(14, 15, 20, 0.84);
   border: 1px solid rgba(216, 221, 230, 0.1);
 }
 
-.compile-glass:hover {
-  border-color: rgba(255, 91, 31, 0.35);
+.compile-card:hover {
+  border-color: rgba(255, 91, 31, 0.4);
 }
 
-/* Infinite Marquee */
-@keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+/* Subtle radial glow background without expensive CSS filter: blur() */
+.compile-glow-bg {
+  background: radial-gradient(circle at 50% 40%, rgba(255, 91, 31, 0.08) 0%, rgba(7, 7, 10, 0) 70%);
 }
 
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee 24s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
+/* Fast text-shadow replacement for drop-shadow filter */
+.text-shadow-hero {
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
 }

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { QualityTier, detectInitialGpuTier } from '../config/gpuTiers';
 
 export type StageId = 0 | 1 | 2 | 3 | 4;
 
@@ -9,6 +10,9 @@ export interface CompileState {
   hoveredSkillNode: string | null;
   cursorPos: { x: number; y: number };
   terminalLogs: string[];
+  qualityTier: QualityTier;
+  fps: number;
+  drawCalls: number;
   
   setScrollProgress: (progress: number) => void;
   setActiveStage: (stage: StageId) => void;
@@ -16,25 +20,31 @@ export interface CompileState {
   setHoveredSkillNode: (skill: string | null) => void;
   setCursorPos: (x: number, y: number) => void;
   addTerminalLog: (log: string) => void;
+  setQualityTier: (tier: QualityTier) => void;
+  degradeQualityTier: () => void;
+  setFps: (fps: number) => void;
+  setDrawCalls: (calls: number) => void;
 }
 
-export const useCompileStore = create<CompileState>((set) => ({
+export const useCompileStore = create<CompileState>((set, get) => ({
   scrollProgress: 0,
   activeStage: 0,
   activeTower: 0,
   hoveredSkillNode: null,
   cursorPos: { x: 0, y: 0 },
+  qualityTier: detectInitialGpuTier(),
+  fps: 60,
+  drawCalls: 0,
   terminalLogs: [
     'INIT_SYSTEM: Initializing runtime pipeline...',
     'RESOLVE: Host architecture [x86_64-win32-v8]',
-    'ATTACH: WebGL2 context initialized @ 12000 bits',
+    `ATTACH: WebGL2 context initialized @ ${detectInitialGpuTier()} tier`,
     'SOURCE: Stage 0 mounted. Ready for compilation.',
   ],
 
   setScrollProgress: (progress) => {
     const clamped = Math.max(0, Math.min(1, progress));
     // Determine activeStage from progress (0 to 1 across 5 segments)
-    // 0: [0, 0.2), 1: [0.2, 0.4), 2: [0.4, 0.65), 3: [0.65, 0.85), 4: [0.85, 1.0]
     let stage: StageId = 0;
     if (clamped >= 0.85) stage = 4;
     else if (clamped >= 0.62) stage = 3;
@@ -42,7 +52,14 @@ export const useCompileStore = create<CompileState>((set) => ({
     else if (clamped >= 0.15) stage = 1;
     else stage = 0;
 
-    set({ scrollProgress: clamped, activeStage: stage });
+    // Also determine activeTower if in Stage 1 (0.15 -> 0.38)
+    if (clamped >= 0.15 && clamped < 0.38) {
+      const towerNorm = (clamped - 0.15) / 0.23;
+      const tower = Math.min(3, Math.floor(towerNorm * 4));
+      set({ scrollProgress: clamped, activeStage: stage, activeTower: tower });
+    } else {
+      set({ scrollProgress: clamped, activeStage: stage });
+    }
   },
 
   setActiveStage: (stage) => set({ activeStage: stage }),
@@ -53,4 +70,18 @@ export const useCompileStore = create<CompileState>((set) => ({
     set((state) => ({
       terminalLogs: [...state.terminalLogs.slice(-25), log],
     })),
+  setQualityTier: (tier) => {
+    set({ qualityTier: tier });
+    get().addTerminalLog(`GPU_TIER: Quality shifted to [${tier}]`);
+  },
+  degradeQualityTier: () => {
+    const current = get().qualityTier;
+    if (current === 'HIGH') {
+      get().setQualityTier('MEDIUM');
+    } else if (current === 'MEDIUM') {
+      get().setQualityTier('LOW');
+    }
+  },
+  setFps: (fps) => set({ fps }),
+  setDrawCalls: (calls) => set({ drawCalls: calls }),
 }));

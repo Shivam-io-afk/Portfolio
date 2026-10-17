@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 
 interface ScatterTextProps {
   children: string;
@@ -12,52 +11,35 @@ export const ScatterText: React.FC<ScatterTextProps> = ({
   className = '',
   as = 'span',
 }) => {
-  const characters = useMemo(() => {
-    return children.split('').map((char, index) => {
-      // Deterministic pseudo-random seed per index
-      const seed = Math.sin(index * 999) * 10000;
-      // Stagger within 0 to 0.28s max so whole text finishes within 0.75s
-      const randomDelay = (Math.abs(seed - Math.floor(seed)) * 0.24);
-      const randomY = (Math.abs(Math.cos(index * 333)) - 0.5) * 8;
-      return { char, delay: randomDelay, y: randomY };
-    });
-  }, [children]);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    // Reveal letters quickly, then convert to plain text to avoid persistent GPU layers
+    const timer = setTimeout(() => {
+      setRevealed(true);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   const Tag = as as any;
 
+  if (revealed) {
+    return <Tag className={`inline-block ${className}`}>{children}</Tag>;
+  }
+
   return (
     <Tag className={`inline-block ${className}`}>
-      {characters.map((item, idx) => {
-        if (item.char === ' ') {
-          return <span key={idx}>&nbsp;</span>;
-        }
-
-        return (
-          <motion.span
-            key={idx}
-            initial={{
-              opacity: 0,
-              filter: 'blur(6px)',
-              y: item.y,
-              scale: 0.96,
-            }}
-            animate={{
-              opacity: 1,
-              filter: 'blur(0px)',
-              y: 0,
-              scale: 1,
-            }}
-            transition={{
-              duration: 0.45,
-              delay: item.delay,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="inline-block will-change-transform will-change-filter"
-          >
-            {item.char}
-          </motion.span>
-        );
-      })}
+      {children.split('').map((char, idx) => (
+        <span
+          key={idx}
+          style={{
+            display: 'inline-block',
+            animation: `fadeInUp 0.35s ease forwards ${(idx * 0.02).toFixed(2)}s`,
+          }}
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </span>
+      ))}
     </Tag>
   );
 };

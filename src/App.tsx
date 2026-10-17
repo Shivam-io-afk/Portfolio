@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Lenis from 'lenis';
+import gsap from 'gsap';
 import { portfolioData } from './data/portfolioData';
 import { CompileCanvas } from './components/compile/CompileCanvas';
 import { Navbar } from './components/layout/Navbar';
@@ -8,6 +9,7 @@ import { Projects } from './components/sections/Projects';
 import { Skills } from './components/sections/Skills';
 import { ExperienceAndCredentials } from './components/sections/ExperienceAndCredentials';
 import { Contact } from './components/sections/Contact';
+import { DevPerfOverlay } from './components/ui/DevPerfOverlay';
 import { useCompileStore } from './store/useCompileStore';
 
 export const App: React.FC = () => {
@@ -16,15 +18,13 @@ export const App: React.FC = () => {
   const setCursorPos = useCompileStore((state) => state.setCursorPos);
 
   useEffect(() => {
-    // 1. Initialize Lenis Smooth Scrolling
+    // 1. Initialize Lenis with lerp 0.08, synchronized with gsap.ticker
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      lerp: 0.08,
       smoothWheel: true,
     });
 
     lenis.on('scroll', (e: any) => {
-      // Calculate global scroll progress 0.0 -> 1.0
       const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
       if (totalScrollable > 0) {
         const progress = e.scroll / totalScrollable;
@@ -32,11 +32,11 @@ export const App: React.FC = () => {
       }
     });
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
+    // Drive Lenis via GSAP ticker for frame-locked synchronization
+    const updateLenis = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+    gsap.ticker.add(updateLenis);
 
     if (window.location.hash) {
       setTimeout(() => {
@@ -51,6 +51,7 @@ export const App: React.FC = () => {
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
+      gsap.ticker.remove(updateLenis);
       lenis.destroy();
       window.removeEventListener('mousemove', handleMouseMove);
     };
@@ -58,7 +59,10 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-[#07070a] text-[#d8dde6] overflow-x-hidden selection:bg-[#ff5b1f] selection:text-black font-grotesk antialiased">
-      {/* Fixed Full-Screen Three.js Canvas with 12,000 Bits Instanced Mesh */}
+      {/* Dev Performance HUD Overlay (FPS, drawcalls, tier switch, active stage) */}
+      <DevPerfOverlay />
+
+      {/* Fixed Full-Screen Three.js Canvas with Tier-Adaptive Bits Instanced Mesh */}
       <CompileCanvas />
 
       {/* Header / HUD Navigation with Monogram [ SM ], Build Passing Pill, IST Clock */}
@@ -78,7 +82,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* Minimal COMPILE Terminal Footer */}
-      <footer className="relative z-10 border-t border-[#d8dde6]/10 py-12 bg-[#07070a]/85 backdrop-blur-md">
+      <footer className="relative z-10 border-t border-[#d8dde6]/10 py-12 bg-[#07070a]/90 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-6 sm:px-12 gap-6">
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs text-[#ff5b1f]">[ SM ]</span>
