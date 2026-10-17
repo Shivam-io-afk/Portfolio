@@ -10,7 +10,7 @@ export const DevPerfOverlay: React.FC = () => {
   const scrollProgress = useCompileStore((state) => state.scrollProgress);
   const activeStage = useCompileStore((state) => state.activeStage);
 
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(true);
 
   // Available in both dev and preview for verification
 

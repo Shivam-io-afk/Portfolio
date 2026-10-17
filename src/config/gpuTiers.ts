@@ -119,10 +119,8 @@ export function detectInitialGpuTier(): QualityTier {
     console.warn('WebGL detection error:', e);
   }
 
-  // Mobile fallback by screen width
-  if (window.innerWidth < 768) return 'LOW';
-
-  return 'MEDIUM';
+  // Default to HIGH tier
+  return 'HIGH';
 }
 
 /**
@@ -141,3 +139,4 @@ export async function refineGpuTierWithLibrary(): Promise<QualityTier> {
     return detectInitialGpuTier();
   }
 }
+

@@ -32,13 +32,13 @@ export const useCompileStore = create<CompileState>((set, get) => ({
   activeTower: 0,
   hoveredSkillNode: null,
   cursorPos: { x: 0, y: 0 },
-  qualityTier: detectInitialGpuTier(),
+  qualityTier: 'HIGH',
   fps: 60,
   drawCalls: 0,
   terminalLogs: [
     'INIT_SYSTEM: Initializing runtime pipeline...',
     'RESOLVE: Host architecture [x86_64-win32-v8]',
-    `ATTACH: WebGL2 context initialized @ ${detectInitialGpuTier()} tier`,
+    'ATTACH: WebGL2 context initialized @ HIGH tier',
     'SOURCE: Stage 0 mounted. Ready for compilation.',
   ],
 
