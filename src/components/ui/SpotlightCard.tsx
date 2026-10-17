@@ -1,47 +1,30 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 
 interface SpotlightCardProps {
   children: React.ReactNode;
   className?: string;
+  hasLiveDot?: boolean;
 }
 
-export const SpotlightCard: React.FC<SpotlightCardProps> = ({ children, className = '' }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState(0);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    setPosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
-  const handleMouseEnter = () => setOpacity(1);
-  const handleMouseLeave = () => setOpacity(0);
-
+export const SpotlightCard: React.FC<SpotlightCardProps> = ({
+  children,
+  className = '',
+  hasLiveDot = false,
+}) => {
   return (
     <div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`relative overflow-hidden rounded-2xl bg-obsidian-900/80 border border-white/[0.08] p-7 backdrop-blur-xl transition-all duration-300 hover:border-magma-base/40 hover:shadow-2xl hover:shadow-magma-base/10 ${className}`}
+      className={`relative overflow-hidden bg-glass-surface backdrop-blur-glass border border-glass-border border-l-2 border-l-flora-lime p-7 transition-all duration-300 hover:border-l-flora-lime hover:border-glass-borderHover hover:shadow-[0_0_30px_rgba(184,245,122,0.12)] ${className}`}
     >
-      {/* Radial Spotlight Follower */}
-      <div
-        className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300"
-        style={{
-          opacity,
-          background: `radial-gradient(400px circle at ${position.x}px ${position.y}px, rgba(255, 59, 0, 0.15), transparent 80%)`,
-        }}
-      />
-      
-      {/* Content */}
+      {/* Live Status Indicator (if present) */}
+      {hasLiveDot && (
+        <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-0.5 rounded bg-black/40 border border-white/5 text-[10px] font-mono text-flora-lime uppercase tracking-widest">
+          <span className="w-1.5 h-1.5 rounded-full bg-flora-lime animate-ping" />
+          <span>LIVE</span>
+        </div>
+      )}
+
+      {/* Card Content */}
       <div className="relative z-10">{children}</div>
     </div>
   );
 };
-

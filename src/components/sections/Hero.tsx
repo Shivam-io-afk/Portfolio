@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Flame, ArrowDown, ExternalLink, Code2 } from 'lucide-react';
 import type { PortfolioData } from '../../data/portfolioData';
+import { SwashText } from '../ui/SwashText';
+import { PrimaryButton, SecondaryButton } from '../ui/FloraButton';
 
 interface HeroProps {
   data: PortfolioData;
@@ -9,117 +10,74 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ data }) => {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center pt-28 pb-20 px-6 overflow-hidden">
-      {/* Background Radial Glow */}
-      <div className="absolute inset-0 pointer-events-none lava-radial-gradient z-0 opacity-80" />
+    <section id="hero" className="relative min-h-screen flex flex-col justify-between pt-32 pb-16 px-6 sm:px-12 max-w-7xl mx-auto z-10 pointer-events-none">
+      
+      {/* 1. TOP-LEFT: Subtext + Role + Primary Actions (Interactive pointer-events-auto) */}
+      <motion.div
+        initial={{ opacity: 0, y: -24, filter: 'blur(8px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 1, delay: 0.2 }}
+        className="max-w-lg pointer-events-auto space-y-5"
+      >
+        {/* Protocol/Role Eyebrow */}
+        <div className="flex items-center gap-2 text-xs font-mono tracking-wideflora uppercase text-flora-lime">
+          <span className="w-2 h-2 bg-flora-lime shadow-[0_0_8px_#b8f57a]" />
+          <span><SwashText>{data.personal.role}</SwashText></span>
+        </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
-        {/* Eyebrow Pill */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-smoke-300 mb-6 backdrop-blur-md"
-        >
-          <Flame className="w-3.5 h-3.5 text-magma-base animate-pulse" />
-          <span className="tracking-widest uppercase">{data.personal.role}</span>
-        </motion.div>
-
-        {/* Hero Title with Bold Editorial Typography */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="font-display font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight leading-[0.92] uppercase text-white mb-6"
-        >
-          {data.personal.name}
-        </motion.h1>
-
-        {/* Headline & Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="font-display font-bold text-sm sm:text-base uppercase tracking-widest text-magma-bright mb-4 max-w-2xl"
-        >
-          {data.personal.headline}
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.25 }}
-          className="text-sm sm:text-base text-smoke-300 max-w-2xl font-light mb-10 leading-relaxed"
-        >
+        {/* Subtext Paragraph */}
+        <p className="text-xs sm:text-sm text-ice-muted font-normal leading-relaxed uppercase tracking-flora">
           {data.personal.subheadline}
-        </motion.p>
+        </p>
 
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-4"
-        >
-          <a
-            href="#projects"
-            className="px-7 py-3 rounded-full bg-magma-base text-white font-mono text-xs uppercase tracking-widest font-semibold hover:bg-magma-bright transition-all shadow-[0_0_25px_rgba(255,59,0,0.4)] hover:shadow-[0_0_40px_rgba(255,59,0,0.7)]"
-          >
-            Explore Projects
-          </a>
-          <a
-            href={data.personal.socials.github}
-            target="_blank"
-            rel="noreferrer"
-            className="px-6 py-3 rounded-full bg-white/[0.05] border border-white/10 text-smoke-100 font-mono text-xs uppercase tracking-widest font-medium hover:bg-white/10 transition-all backdrop-blur-sm flex items-center gap-2"
-          >
-            <Code2 className="w-3.5 h-3.5 text-magma-base" />
-            <span>GitHub Profile</span>
-          </a>
-          <a
-            href="#contact"
-            className="px-6 py-3 rounded-full bg-white/[0.05] border border-white/10 text-smoke-100 font-mono text-xs uppercase tracking-widest font-medium hover:bg-white/10 transition-all backdrop-blur-sm"
-          >
-            Get In Touch
-          </a>
-        </motion.div>
+        {/* Buttons: Primary (White rect + Lime arrow) & Secondary (Glass + Lime border) */}
+        <div className="flex flex-wrap items-center gap-4 pt-2">
+          <PrimaryButton href="#projects">
+            EXPLORE WORKS
+          </PrimaryButton>
+          <SecondaryButton href={data.personal.socials.github} target="_blank" rel="noreferrer">
+            SOURCE CODE
+          </SecondaryButton>
+        </div>
 
-        {/* Metrics Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-16 w-full max-w-3xl"
-        >
-          {data.metrics.map((metric, idx) => (
-            <div
-              key={idx}
-              className="p-4 rounded-xl bg-obsidian-900/40 border border-white/[0.06] backdrop-blur-md text-left"
-            >
-              <div className="font-display font-bold text-2xl text-magma-base">
-                {metric.value}
-              </div>
-              <div className="font-mono text-xs text-smoke-100 uppercase tracking-wider mt-1">
-                {metric.label}
-              </div>
-              <div className="text-[11px] text-smoke-500 mt-0.5">
-                {metric.detail}
-              </div>
+        {/* Telemetry Indicator Chip */}
+        <div className="inline-flex items-center gap-3 px-3 py-1.5 bg-glass-surface backdrop-blur-glass border border-glass-border text-[11px] font-mono text-ice-muted mt-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-flora-lime animate-pulse" />
+          <span>COORDINATES: {data.personal.location}</span>
+        </div>
+      </motion.div>
+
+      {/* 2. BOTTOM-LEFT: Giant ~9vw Lime Headline with Second Line Indented */}
+      <motion.div
+        initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 1.2, delay: 0.4 }}
+        className="mt-20 sm:mt-24 pointer-events-auto"
+      >
+        <h1 className="font-display font-bold text-[clamp(2.75rem,8.5vw,7.5rem)] leading-[0.92] text-flora-lime uppercase tracking-tight">
+          <div className="overflow-hidden">
+            <span className="block">
+              <SwashText>SHIVAM</SwashText>
+            </span>
+          </div>
+          <div className="overflow-hidden pl-8 sm:pl-20 md:pl-32">
+            <span className="block text-ice-white hover:text-flora-lime transition-colors">
+              <SwashText>MISHRA.</SwashText>
+            </span>
+          </div>
+        </h1>
+
+        {/* Minimal metrics row anchored at bottom right on desktop */}
+        <div className="flex flex-wrap items-center gap-6 mt-6 pt-4 border-t border-glass-border max-w-xl text-xs font-mono text-ice-muted uppercase tracking-wideflora">
+          {data.metrics.map((m, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <span className="text-flora-lime font-bold">{m.value}</span>
+              <span className="text-[10px] text-ice-dim">{m.label}</span>
             </div>
           ))}
-        </motion.div>
+        </div>
+      </motion.div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="mt-14 text-smoke-500 flex flex-col items-center gap-2 text-xs font-mono"
-        >
-          <span className="uppercase tracking-widest text-[10px]">Explore works & credentials</span>
-          <ArrowDown className="w-3.5 h-3.5 animate-bounce text-magma-base" />
-        </motion.div>
-      </div>
     </section>
   );
 };

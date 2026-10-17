@@ -1,40 +1,81 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Lenis from 'lenis';
 import { portfolioData } from './data/portfolioData';
-import { LavaCanvas } from './components/3d/LavaCanvas';
 import { FloraCanvas } from './components/3d/FloraCanvas';
 import { Navbar } from './components/layout/Navbar';
-import { CursorGlow } from './components/layout/CursorGlow';
 import { Hero } from './components/sections/Hero';
 import { MagmaMarquee } from './components/ui/MagmaMarquee';
 import { Projects } from './components/sections/Projects';
 import { Skills } from './components/sections/Skills';
 import { ExperienceAndCredentials } from './components/sections/ExperienceAndCredentials';
 import { Contact } from './components/sections/Contact';
-import { ThemeSwitcher, VisualMode } from './components/ui/ThemeSwitcher';
 
 export const App: React.FC = () => {
   const data = portfolioData;
-  const [visualMode, setVisualMode] = useState<VisualMode>('flora');
+  const [keyholeRadius, setKeyholeRadius] = useState(100);
+
+  useEffect(() => {
+    // 1. Initialize Lenis Smooth Inertia Scrolling
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // 2. Keyhole Mask Reveal driven by initial scroll
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      // Keyhole starts open and expands seamlessly
+      const radius = Math.min(150, 45 + scrollY * 0.35);
+      setKeyholeRadius(radius);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      lenis.destroy();
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
-    <div className="relative min-h-screen bg-obsidian-950 text-smoke-100 overflow-x-hidden selection:bg-emerald-500 selection:text-black">
-      {/* 1. Global Film Grain Noise Overlay */}
+    <div
+      className="relative min-h-screen bg-navy-night text-ice-white overflow-x-hidden selection:bg-flora-lime selection:text-black font-sans"
+      style={{
+        background: 'radial-gradient(ellipse at 50% 30%, #0a1a4a 0%, #060507 90%)',
+      }}
+    >
+      {/* 1. Global Film Grain Overlay */}
       <div className="film-grain" />
 
-      {/* 2. Deep Volcanic/Nocturnal Vignette */}
-      <div className="volcanic-vignette" />
+      {/* 2. Deep Nocturnal Vignette */}
+      <div className="flora-vignette" />
 
-      {/* 3. Interactive Mouse Atmospheric Glow + Cursor Spark */}
-      <CursorGlow />
+      {/* 3. Diagonal Blue Light Beam */}
+      <div className="flora-light-beam" />
 
-      {/* 4. Active 3D WebGL Canvas (Flora Dandelion or Molten Lava) */}
-      {visualMode === 'flora' ? <FloraCanvas /> : <LavaCanvas />}
+      {/* 4. Faint Orange Fire Horizon Glow */}
+      <div className="flora-horizon-glow" />
 
-      {/* 5. Floating Glassmorphism HUD Navigation */}
+      {/* 5. Fixed 3D WebGL Canvas (Bloom ~1.2, Dandelion, Nebula & Iris) */}
+      <FloraCanvas />
+
+      {/* 6. Floating Glassmorphism HUD Navbar */}
       <Navbar availability={data.personal.availability} />
 
-      {/* 6. Main Orchestrated Sections */}
-      <main className="relative z-10">
+      {/* 7. Landing Page Content with Keyhole Mask Reveal */}
+      <main
+        className="relative z-10 keyhole-mask"
+        style={{
+          // @ts-ignore
+          '--mask-radius': `${keyholeRadius}%`,
+        }}
+      >
         <Hero data={data} />
         <MagmaMarquee />
         <Projects projects={data.projects} />
@@ -47,20 +88,17 @@ export const App: React.FC = () => {
         <Contact personal={data.personal} />
       </main>
 
-      {/* 7. Theme Switcher Mode Pill (Flora vs Magma) */}
-      <ThemeSwitcher mode={visualMode} onToggle={setVisualMode} />
-
-      {/* 8. Ambient Footer */}
-      <footer className="relative z-10 border-t border-white/[0.06] py-12 text-center text-xs font-mono text-smoke-500 bg-obsidian-950/90 backdrop-blur-xl">
-        <div className="flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto px-6 gap-6">
+      {/* 8. Minimalist Ambient Footer */}
+      <footer className="relative z-10 border-t border-glass-border py-12 text-center text-xs font-mono text-ice-dim bg-navy-dark/80 backdrop-blur-glass">
+        <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-6 sm:px-12 gap-6">
           <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#10b981] animate-pulse" />
-            <span className="text-smoke-300 font-mono tracking-wide">
-              Forged by Shivam Mishra • MERN & Creative Technologist
+            <span className="w-2 h-2 bg-flora-lime shadow-[0_0_10px_#b8f57a]" />
+            <span className="text-ice-muted font-display tracking-wideflora uppercase">
+              SHIVAM MISHRA • MERN STACK & CREATIVE TECHNOLOGIST
             </span>
           </div>
-          <div className="text-smoke-500 text-[11px]">
-            Rewa, MP, India • &copy; {new Date().getFullYear()} • Inspired by GetLayers Flora & Creative Director
+          <div className="text-ice-dim text-[11px] uppercase tracking-wideflora">
+            REWA, MP, INDIA • &copy; {new Date().getFullYear()} • STEMLINE RELAY FLORA PROTOCOL
           </div>
         </div>
       </footer>
