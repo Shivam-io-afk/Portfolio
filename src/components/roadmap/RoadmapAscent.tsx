@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight, Award, CheckCircle2, ChevronRight, X } from 'lucide-react';
+import { Award, CheckCircle2, ChevronRight, X, ArrowUpRight } from 'lucide-react';
 import { MILESTONES, Milestone } from './roadmapData';
-import { MonthSpine } from './MonthSpine';
+import { MonthSpine, MonthSpineHandle } from './MonthSpine';
 import { SplitFlapCounter } from './SplitFlapCounter';
 import { PixelBloomCanvas } from './PixelBloomCanvas';
 import type { PortfolioData } from '../../data/portfolioData';
@@ -19,10 +19,11 @@ interface RoadmapAscentProps {
 export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [] }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pinRef = useRef<HTMLDivElement | null>(null);
+  const spineRef = useRef<MonthSpineHandle | null>(null);
 
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [currentMonthFloat, setCurrentMonthFloat] = useState<number>(0);
-  const [segmentProgress, setSegmentProgress] = useState<number>(0);
+  const activeIndexRef = useRef<number>(0);
+
   const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
   const [showCredsModal, setShowCredsModal] = useState<boolean>(false);
   const [textKey, setTextKey] = useState<number>(0);
@@ -37,38 +38,21 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  // GSAP ScrollTrigger Pinning Setup
+  // GSAP ScrollTrigger Pinning Setup with anticipatePin: 1 and standard pinSpacing
   useEffect(() => {
     if (isReducedMotion || !containerRef.current || !pinRef.current) return;
 
     const totalMilestones = MILESTONES.length;
-    const snapPoints = MILESTONES.map((_, i) => i / (totalMilestones - 1));
 
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: containerRef.current,
         pin: pinRef.current,
         start: 'top top',
-        end: 'bottom bottom',
-        pinSpacing: false,
+        end: '+=350%',
+        pinSpacing: true,
+        anticipatePin: 1,
         scrub: 0.6,
-        snap: {
-          snapTo: (value) => {
-            // Find closest snap point
-            let closest = snapPoints[0];
-            let minDiff = Math.abs(value - closest);
-            for (let i = 1; i < snapPoints.length; i++) {
-              const diff = Math.abs(value - snapPoints[i]);
-              if (diff < minDiff) {
-                minDiff = diff;
-                closest = snapPoints[i];
-              }
-            }
-            return closest;
-          },
-          duration: 0.4,
-          ease: 'power2.out',
-        },
         onUpdate: (self) => {
           const progress = self.progress; // 0 to 1
           const rawIndex = progress * (totalMilestones - 1);
@@ -83,11 +67,18 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
             currM.monthSpineIndex +
             (nextM.monthSpineIndex - currM.monthSpineIndex) * localProgress;
 
+          // Zero-render direct GPU update on spine
+          if (spineRef.current) {
+            spineRef.current.updateProgress(monthFloat, localProgress);
+          }
+
           const closestIndex = Math.min(Math.round(rawIndex), totalMilestones - 1);
 
-          setCurrentMonthFloat(monthFloat);
-          setSegmentProgress(localProgress);
-          setActiveIndex(closestIndex);
+          // ONLY update React state when the milestone index actually changes (8 times total)
+          if (closestIndex !== activeIndexRef.current) {
+            activeIndexRef.current = closestIndex;
+            setActiveIndex(closestIndex);
+          }
         },
       });
     }, containerRef);
@@ -95,7 +86,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
     return () => ctx.revert();
   }, [isReducedMotion]);
 
-  // Mask-up transition trigger when activeIndex changes
+  // Mask-up transition trigger only when activeIndex changes
   useEffect(() => {
     setTextKey((prev) => prev + 1);
   }, [activeIndex]);
@@ -105,7 +96,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
   const handleHireMeClick = () => {
     const contactElem = document.getElementById('contact');
     if (contactElem) {
-      contactElem.scrollIntoView({ behavior: 'smooth' });
+      contactElem.scrollIntoView();
     } else {
       window.location.href = 'mailto:shivam.m28737@gmail.com?subject=Full-Stack%20Role%20Inquiry';
     }
@@ -161,19 +152,18 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
   }
 
   // ========================================================
-  // PINNED 400vh "ROADMAP ASCENT" SECTION
+  // PINNED "ROADMAP ASCENT" SECTION
   // ========================================================
   return (
     <section
       id="experience"
       ref={containerRef}
       className="relative w-full z-10 bg-[#07070a]"
-      style={{ height: '400vh' }}
     >
       {/* Pinned Fullscreen Viewport Layer */}
       <div
         ref={pinRef}
-        className="w-full h-screen overflow-hidden relative flex flex-col justify-between bg-[#07070a] pt-20 sm:pt-24"
+        className="w-full h-screen overflow-hidden relative flex flex-col justify-between bg-[#07070a] pt-20 sm:pt-24 z-20"
       >
         {/* Subtle Top Header bar inside pinned view */}
         <div className="w-full px-6 sm:px-12 py-3 flex items-center justify-between border-b border-[#d8dde6]/10 z-20 bg-[#07070a]/90 backdrop-blur-md shrink-0">
@@ -215,8 +205,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
              ======================================================== */}
           <div className="w-full md:w-[35%] h-auto md:h-full relative shrink-0 z-10 border-b md:border-b-0 md:border-r border-[#d8dde6]/10">
             <MonthSpine
-              currentMonthFloat={currentMonthFloat}
-              milestoneSegmentProgress={segmentProgress}
+              ref={spineRef}
               activeMilestoneIndex={activeIndex}
             />
           </div>
@@ -232,7 +221,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
             />
 
             {/* Glass panel container for crisp text contrast */}
-            <div className="relative z-10 max-w-2xl bg-gradient-to-br from-[#0c0d12]/80 to-[#07070a]/92 backdrop-blur-md p-5 sm:p-7 border border-[#d8dde6]/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+            <div className="relative z-10 max-w-2xl bg-[#0c0d12]/95 p-5 sm:p-7 border border-[#d8dde6]/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
               {/* 1. Pill tag with small orange pulsing dot */}
               <div className="flex items-center gap-3 mb-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#151620] border border-[#ff5b1f]/30 rounded-full font-mono text-xs uppercase tracking-mono text-[#ff5b1f]">
@@ -344,7 +333,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
             <button
               type="button"
               onClick={() => setShowCredsModal(false)}
-              className="absolute top-4 right-4 text-[#d8dde6]/60 hover:text-white p-1 hover:bg-white/5 transition-colors"
+              className="absolute top-4 right-4 text-[#d8dde6]/60 hover:text-white p-1 hover:bg-white/5 transition-colors cursor-pointer"
               aria-label="Close credentials modal"
             >
               <X className="w-5 h-5" />
@@ -397,7 +386,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
               <button
                 type="button"
                 onClick={() => setShowCredsModal(false)}
-                className="px-4 py-2 bg-[#121318] hover:bg-white/10 font-mono text-xs uppercase tracking-mono text-[#d8dde6] transition-colors"
+                className="px-4 py-2 bg-[#121318] hover:bg-white/10 font-mono text-xs uppercase tracking-mono text-[#d8dde6] transition-colors cursor-pointer"
               >
                 Dismiss
               </button>

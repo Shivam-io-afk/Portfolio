@@ -5,7 +5,6 @@ import { SKILL_CLUSTER_CENTERS, SKILL_CLUSTER_EDGES } from './layoutGenerators';
 import { useCompileStore } from '../../store/useCompileStore';
 
 export const NetworkGraphEdges: React.FC = () => {
-  const scrollProgress = useCompileStore((state) => state.scrollProgress);
   const lineRef = useRef<THREE.LineSegments>(null);
   const pulsesRef = useRef<THREE.Points>(null);
 
@@ -39,71 +38,71 @@ export const NetworkGraphEdges: React.FC = () => {
   }, []);
 
   useFrame((_, delta) => {
-    // Opacity based on proximity to Stage 2 (scrollProgress 0.38 -> 0.62)
-    // Peak at 0.50
+    const scrollProgress = useCompileStore.getState().scrollProgress;
+
+    // Opacity based on proximity to Stage 2 (scrollProgress 0.38 -> 0.54)
+    // Peak at 0.46
     let opacity = 0;
-    if (scrollProgress >= 0.28 && scrollProgress <= 0.72) {
-      const dist = Math.abs(scrollProgress - 0.50);
-      opacity = Math.max(0, 1.0 - dist / 0.18);
+    if (scrollProgress >= 0.36 && scrollProgress <= 0.58) {
+      const dist = Math.abs(scrollProgress - 0.46);
+      opacity = Math.max(0, 1.0 - dist / 0.10);
     }
 
     if (lineRef.current) {
       const mat = lineRef.current.material as THREE.LineBasicMaterial;
       mat.opacity = opacity * 0.45;
-      lineRef.current.visible = opacity > 0.02;
     }
 
-    if (pulsesRef.current && opacity > 0.02) {
-      pulsesRef.current.visible = true;
+    if (pulsesRef.current) {
       const mat = pulsesRef.current.material as THREE.PointsMaterial;
       mat.opacity = opacity * 0.85;
 
-      const posAttr = pulseGeo.attributes.position as THREE.BufferAttribute;
-      const arr = posAttr.array as Float32Array;
+      if (opacity > 0.01) {
+        const posAttr = pulseGeo.attributes.position as THREE.BufferAttribute;
+        const array = posAttr.array as Float32Array;
 
-      for (let i = 0; i < pulseCount; i++) {
-        const p = pulseData[i];
-        p.t = (p.t + delta * p.speed) % 1.0;
+        for (let i = 0; i < pulseCount; i++) {
+          const item = pulseData[i];
+          item.t += delta * item.speed;
+          if (item.t > 1.0) item.t = 0;
 
-        const [iA, iB] = SKILL_CLUSTER_EDGES[p.edgeIdx];
-        const pA = SKILL_CLUSTER_CENTERS[iA];
-        const pB = SKILL_CLUSTER_CENTERS[iB];
+          const edge = SKILL_CLUSTER_EDGES[item.edgeIdx];
+          const pA = SKILL_CLUSTER_CENTERS[edge[0]];
+          const pB = SKILL_CLUSTER_CENTERS[edge[1]];
 
-        arr[i * 3 + 0] = THREE.MathUtils.lerp(pA.x, pB.x, p.t);
-        arr[i * 3 + 1] = THREE.MathUtils.lerp(pA.y, pB.y, p.t);
-        arr[i * 3 + 2] = THREE.MathUtils.lerp(pA.z, pB.z, p.t);
+          array[i * 3 + 0] = THREE.MathUtils.lerp(pA.x, pB.x, item.t);
+          array[i * 3 + 1] = THREE.MathUtils.lerp(pA.y, pB.y, item.t);
+          array[i * 3 + 2] = THREE.MathUtils.lerp(pA.z, pB.z, item.t);
+        }
+        posAttr.needsUpdate = true;
       }
-      posAttr.needsUpdate = true;
-    } else if (pulsesRef.current) {
-      pulsesRef.current.visible = false;
     }
   });
 
   return (
     <group>
-      {/* 1. Additive Line Segments */}
+      {/* 1. Subtle glowing interconnect lines between skills */}
       <lineSegments ref={lineRef} geometry={lineGeo}>
         <lineBasicMaterial
           color="#ff5b1f"
           transparent
-          opacity={0.35}
-          blending={THREE.AdditiveBlending}
+          opacity={0}
           depthWrite={false}
+          blending={THREE.AdditiveBlending}
         />
       </lineSegments>
 
-      {/* 2. Traveling Pulse Points */}
+      {/* 2. Traveling pulses */}
       <points ref={pulsesRef} geometry={pulseGeo}>
         <pointsMaterial
-          size={0.12}
           color="#ffffff"
+          size={0.12}
           transparent
-          opacity={0.8}
-          blending={THREE.AdditiveBlending}
+          opacity={0}
           depthWrite={false}
+          blending={THREE.AdditiveBlending}
         />
       </points>
     </group>
   );
 };
-

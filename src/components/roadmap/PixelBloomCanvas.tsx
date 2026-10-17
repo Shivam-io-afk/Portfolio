@@ -5,23 +5,12 @@ interface PixelBloomCanvasProps {
   className?: string;
 }
 
-interface PixelCell {
-  x: number;
-  y: number;
-  size: number;
-  type: 'graphite' | 'orange' | 'white';
-  baseAlpha: number;
-  phase: number;
-  speed: number;
-}
-
 export const PixelBloomCanvas: React.FC<PixelBloomCanvasProps> = ({
   activeMilestoneIndex,
   className = '',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const cellsRef = useRef<PixelCell[]>([]);
-  const isVisibleRef = useRef<boolean>(true);
+  const isVisibleRef = useRef<boolean>(false);
   const waveRef = useRef<{ active: boolean; startTime: number; duration: number }>({
     active: false,
     startTime: 0,
@@ -48,71 +37,223 @@ export const PixelBloomCanvas: React.FC<PixelBloomCanvasProps> = ({
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    let animId: number;
+    let animId: number = 0;
     let lastDraw = 0;
-    const FRAME_INTERVAL = 33.3; // ~30 FPS throttle for GPU/CPU efficiency
+    const FRAME_INTERVAL = 33.33; // Exactly 30 FPS cap
 
-    // Setup intersection observer to pause when off-screen
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        isVisibleRef.current = entry ? entry.isIntersecting : false;
-      },
-      { threshold: 0.05 }
-    );
-    observer.observe(canvas);
+    // Offscreen canvas for one-time static background draw
+    let offscreenCanvas: HTMLCanvasElement | null = document.createElement('canvas');
+    let offCtx = offscreenCanvas.getContext('2d', { alpha: true });
+
+    // Typed arrays for high-performance memory layout
+    let cellCount = 0;
+    let cellX: Float32Array;
+    let cellY: Float32Array;
+    let cellType: Uint8Array; // 0: graphite, 1: orange, 2: white
+    let cellBaseAlpha: Float32Array;
+    let twinkleIndices: Uint16Array;
+    let twinklePhases: Float32Array;
+    let twinkleSpeeds: Float32Array;
+    let lastWidth = 0;
+    let lastHeight = 0;
 
     const rebuildGrid = () => {
       const rect = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      const width = rect.width;
-      const height = rect.height;
+      const width = Math.floor(rect.width);
+      const height = Math.floor(rect.height);
+      if (width === 0 || height === 0) return;
+      if (width === lastWidth && height === lastHeight) return;
+      lastWidth = width;
+      lastHeight = height;
 
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // Cap DPR strictly at 1 for zero-overhead 2D fill
+      canvas.width = width;
+      canvas.height = height;
+
+      if (!offscreenCanvas) {
+        offscreenCanvas = document.createElement('canvas');
+        offCtx = offscreenCanvas.getContext('2d', { alpha: true });
+      }
+      offscreenCanvas.width = width;
+      offscreenCanvas.height = height;
 
       const cellSize = 9;
       const gap = 3;
       const pitch = cellSize + gap;
       const cols = Math.ceil(width / pitch);
       const rows = Math.ceil(height / pitch);
+      const maxPossible = cols * rows;
 
-      const cells: PixelCell[] = [];
+      // Temporary arrays to collect spawned cells
+      const tempX: number[] = [];
+      const tempY: number[] = [];
+      const tempType: number[] = [];
+      const tempAlpha: number[] = [];
+      const tempTwinklers: number[] = [];
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const normX = c / cols; // 0 (left) to 1 (right)
-          // Density increases toward the right: left edge ~10% probability, right edge ~80%
+          const normX = c / cols;
+          // Density increases toward the right edge
           const spawnChance = 0.12 + Math.pow(normX, 1.3) * 0.72;
           if (Math.random() > spawnChance) continue;
 
-          // Type distribution: 15% orange, 3% white spark, 82% graphite
           const roll = Math.random();
-          let type: 'graphite' | 'orange' | 'white' = 'graphite';
+          let type = 0; // graphite
           if (roll < 0.15) {
-            type = 'orange';
+            type = 1; // orange
           } else if (roll < 0.18) {
-            type = 'white';
+            type = 2; // white
           }
 
-          // Base alpha also increases rightward
           const baseAlpha = 0.08 + normX * 0.42;
+          const idx = tempX.length;
 
-          cells.push({
-            x: c * pitch,
-            y: r * pitch,
-            size: cellSize,
-            type,
-            baseAlpha,
-            phase: Math.random() * Math.PI * 2,
-            speed: 0.8 + Math.random() * 1.4,
-          });
+          tempX.push(c * pitch);
+          tempY.push(r * pitch);
+          tempType.push(type);
+          tempAlpha.push(baseAlpha);
+
+          // Only ~3.5% of cells are designated to twinkle
+          if (Math.random() < 0.035) {
+            tempTwinklers.push(idx);
+          }
         }
       }
 
-      cellsRef.current = cells;
+      cellCount = tempX.length;
+      cellX = new Float32Array(tempX);
+      cellY = new Float32Array(tempY);
+      cellType = new Uint8Array(tempType);
+      cellBaseAlpha = new Float32Array(tempAlpha);
+
+      const twCount = tempTwinklers.length;
+      twinkleIndices = new Uint16Array(tempTwinklers);
+      twinklePhases = new Float32Array(twCount);
+      twinkleSpeeds = new Float32Array(twCount);
+
+      for (let i = 0; i < twCount; i++) {
+        twinklePhases[i] = Math.random() * Math.PI * 2;
+        twinkleSpeeds[i] = 1.0 + Math.random() * 1.5;
+      }
+
+      // Draw base static grid ONCE to offscreen canvas in 3 grouped fill batches
+      if (offCtx) {
+        offCtx.clearRect(0, 0, width, height);
+
+        // Batch 1: Graphite
+        offCtx.fillStyle = 'rgba(175, 185, 200, 0.15)';
+        for (let i = 0; i < cellCount; i++) {
+          if (cellType[i] === 0) {
+            offCtx.fillRect(cellX[i], cellY[i], cellSize, cellSize);
+          }
+        }
+
+        // Batch 2: Orange
+        offCtx.fillStyle = 'rgba(255, 91, 31, 0.32)';
+        for (let i = 0; i < cellCount; i++) {
+          if (cellType[i] === 1) {
+            offCtx.fillRect(cellX[i], cellY[i], cellSize, cellSize);
+          }
+        }
+
+        // Batch 3: White sparks
+        offCtx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        for (let i = 0; i < cellCount; i++) {
+          if (cellType[i] === 2) {
+            offCtx.fillRect(cellX[i], cellY[i], cellSize, cellSize);
+          }
+        }
+
+        // Pre-warm GPU texture upload immediately on setup so mid-scroll frame doesn't hitch
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(offscreenCanvas, 0, 0);
+      }
     };
+
+    const render = (now: number) => {
+      if (!isVisibleRef.current) {
+        // Stop the RAF loop completely when section is off-screen
+        animId = 0;
+        return;
+      }
+
+      animId = requestAnimationFrame(render);
+
+      if (now - lastDraw < FRAME_INTERVAL) return;
+      lastDraw = now;
+
+      const width = canvas.width;
+      const height = canvas.height;
+      if (width === 0 || height === 0 || !offscreenCanvas) return;
+
+      // 1. Hardware accelerated single blit of base pre-drawn grid (takes <0.05ms)
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(offscreenCanvas, 0, 0);
+
+      // 2. Overdraw ONLY the ~3.5% twinkling cells
+      const tSec = now * 0.001;
+      const twCount = twinkleIndices ? twinkleIndices.length : 0;
+
+      // Batch twinkle orange
+      ctx.fillStyle = 'rgba(255, 91, 31, 0.85)';
+      for (let i = 0; i < twCount; i++) {
+        const idx = twinkleIndices[i];
+        if (cellType[idx] === 1) {
+          const sine = Math.sin(tSec * twinkleSpeeds[i] + twinklePhases[i]);
+          if (sine > 0.3) {
+            ctx.fillRect(cellX[idx], cellY[idx], 9, 9);
+          }
+        }
+      }
+
+      // Batch twinkle white
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      for (let i = 0; i < twCount; i++) {
+        const idx = twinkleIndices[i];
+        if (cellType[idx] === 2) {
+          const sine = Math.sin(tSec * twinkleSpeeds[i] + twinklePhases[i]);
+          if (sine > 0.4) {
+            ctx.fillRect(cellX[idx], cellY[idx], 9, 9);
+          }
+        }
+      }
+
+      // 3. Ripple wave on milestone transition (only draws cells within 100px wave band)
+      const wave = waveRef.current;
+      if (wave.active) {
+        const elapsed = now - wave.startTime;
+        const progress = elapsed / wave.duration;
+        if (progress >= 1) {
+          wave.active = false;
+        } else {
+          const waveFront = progress * (width * 1.25);
+          ctx.fillStyle = 'rgba(255, 91, 31, 0.65)';
+          for (let i = 0; i < cellCount; i += 3) {
+            const dist = Math.abs(cellX[i] - waveFront);
+            if (dist < 90) {
+              ctx.fillRect(cellX[i], cellY[i], 9, 9);
+            }
+          }
+        }
+      }
+    };
+
+    // Setup intersection observer: pauses loop completely when off-screen
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const isIntersecting = entry ? entry.isIntersecting : false;
+        isVisibleRef.current = isIntersecting;
+
+        if (isIntersecting && !animId) {
+          lastDraw = performance.now();
+          animId = requestAnimationFrame(render);
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(canvas);
 
     const resizeObserver = new ResizeObserver(() => {
       rebuildGrid();
@@ -120,75 +261,12 @@ export const PixelBloomCanvas: React.FC<PixelBloomCanvasProps> = ({
     resizeObserver.observe(canvas);
     rebuildGrid();
 
-    const render = (now: number) => {
-      animId = requestAnimationFrame(render);
-
-      if (!isVisibleRef.current) return;
-      if (now - lastDraw < FRAME_INTERVAL) return;
-      lastDraw = now;
-
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
-      if (width === 0 || height === 0) return;
-
-      ctx.clearRect(0, 0, width, height);
-
-      const cells = cellsRef.current;
-      const wave = waveRef.current;
-      let waveFront = -1;
-      let waveActive = false;
-
-      if (wave.active) {
-        const elapsed = now - wave.startTime;
-        const progress = Math.min(elapsed / wave.duration, 1);
-        if (progress >= 1) {
-          wave.active = false;
-        } else {
-          waveActive = true;
-          // Sweep from x = 0 to x = width * 1.2
-          waveFront = progress * (width * 1.25);
-        }
-      }
-
-      const tSec = now * 0.001;
-
-      for (let i = 0; i < cells.length; i++) {
-        const cell = cells[i];
-
-        // Slow subtle twinkle
-        const twinkle = 0.65 + 0.35 * Math.sin(tSec * cell.speed + cell.phase);
-        let alpha = cell.baseAlpha * twinkle;
-
-        // Wave sweep effect: distance from wave front
-        if (waveActive) {
-          const dist = Math.abs(cell.x - waveFront);
-          const waveRadius = 140;
-          if (dist < waveRadius) {
-            const waveBoost = (1 - dist / waveRadius);
-            alpha = Math.min(alpha + waveBoost * 0.6, 0.95);
-          }
-        }
-
-        // Draw crisp rectangle (zero CSS filters, pure 2D fill)
-        if (cell.type === 'orange') {
-          ctx.fillStyle = `rgba(255, 91, 31, ${alpha * 1.3})`;
-        } else if (cell.type === 'white') {
-          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 1.5})`;
-        } else {
-          ctx.fillStyle = `rgba(180, 190, 205, ${alpha * 0.55})`;
-        }
-
-        ctx.fillRect(cell.x, cell.y, cell.size, cell.size);
-      }
-    };
-
-    animId = requestAnimationFrame(render);
-
     return () => {
-      cancelAnimationFrame(animId);
+      if (animId) cancelAnimationFrame(animId);
       observer.disconnect();
       resizeObserver.disconnect();
+      offscreenCanvas = null;
+      offCtx = null;
     };
   }, []);
 
@@ -200,4 +278,3 @@ export const PixelBloomCanvas: React.FC<PixelBloomCanvasProps> = ({
     />
   );
 };
-

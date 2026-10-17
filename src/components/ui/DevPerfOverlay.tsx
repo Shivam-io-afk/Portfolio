@@ -3,39 +3,28 @@ import { useCompileStore } from '../../store/useCompileStore';
 import { QualityTier } from '../../config/gpuTiers';
 
 export const DevPerfOverlay: React.FC = () => {
+  const [isDebug, setIsDebug] = useState(false);
+  const [minimized, setMinimized] = useState(false);
+
   const fps = useCompileStore((state) => state.fps);
   const drawCalls = useCompileStore((state) => state.drawCalls);
   const qualityTier = useCompileStore((state) => state.qualityTier);
   const setQualityTier = useCompileStore((state) => state.setQualityTier);
-  const scrollProgress = useCompileStore((state) => state.scrollProgress);
   const activeStage = useCompileStore((state) => state.activeStage);
-
-  const [isDebug, setIsDebug] = useState(false);
-  const [minimized, setMinimized] = useState(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('debug')) {
       setIsDebug(true);
-      setMinimized(false);
     }
   }, []);
 
-  const stageNames = ['0 SOURCE', '1 BUILD', '2 NETWORK', '3 RUNTIME', '4 DEPLOY'];
-
-  // If not ?debug in URL and minimized, show only a tiny 1-line pill bottom-left
-  if (!isDebug && minimized) {
-    return (
-      <aside
-        id="perf-hud-overlay"
-        aria-label="Compile Status Indicator"
-        onClick={() => setMinimized(false)}
-        className="fixed bottom-3 left-3 z-50 font-mono text-[10px] tracking-mono text-[#d8dde6]/60 bg-[#07070a]/75 border border-[#d8dde6]/10 px-2.5 py-1 rounded-sm backdrop-blur-sm pointer-events-auto cursor-pointer hover:border-[#ff5b1f]/40 hover:text-white transition-all select-none"
-      >
-        <span className="text-[#ff5b1f] font-bold mr-1.5">[COMPILE]</span>
-        <span id="perf-hud-fps" className="text-[#4ade80] font-semibold">{fps} FPS</span>
-      </aside>
-    );
+  // Strict requirement: Hide the HUD entirely unless the URL has ?debug
+  if (!isDebug) {
+    return null;
   }
+
+  const stageNames = ['0 SOURCE', '1 BUILD', '2 NETWORK', '3 RUNTIME', '4 DEPLOY'];
+  const scrollProgress = useCompileStore.getState().scrollProgress;
 
   return (
     <aside
@@ -44,10 +33,10 @@ export const DevPerfOverlay: React.FC = () => {
       className="fixed bottom-3 left-3 z-50 font-mono text-[11px] bg-[#07070a]/90 border border-[#d8dde6]/20 p-3 shadow-xl backdrop-blur-md pointer-events-auto select-none rounded-sm"
     >
       <div className="flex items-center justify-between gap-4 pb-2 border-b border-[#d8dde6]/10 mb-2">
-        <span className="text-[#ff5b1f] font-bold">PERF_HUD</span>
+        <span className="text-[#ff5b1f] font-bold">PERF_HUD [DEBUG]</span>
         <button
           onClick={() => setMinimized(!minimized)}
-          className="text-[#d8dde6]/50 hover:text-white px-1 text-xs"
+          className="text-[#d8dde6]/50 hover:text-white px-1 text-xs cursor-pointer"
           title="Toggle HUD size"
         >
           {minimized ? '+' : '−'}
@@ -80,7 +69,7 @@ export const DevPerfOverlay: React.FC = () => {
                 <button
                   key={t}
                   onClick={() => setQualityTier(t)}
-                  className={`px-1.5 py-0.5 text-[9px] border transition-colors ${
+                  className={`px-1.5 py-0.5 text-[9px] border transition-colors cursor-pointer ${
                     qualityTier === t
                       ? 'border-[#ff5b1f] bg-[#ff5b1f]/20 text-[#ff5b1f] font-bold'
                       : 'border-[#d8dde6]/20 text-[#d8dde6]/60 hover:text-white'

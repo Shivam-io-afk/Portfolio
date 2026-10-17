@@ -66,9 +66,9 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
         {/* Center Space for 3D Fibonacci Sphere */}
         <div className="hidden lg:block lg:col-span-3 pointer-events-none" aria-hidden="true" />
 
-        {/* Right Col: Subtext Glass Card + CTAs */}
-        <div className="lg:col-span-4 flex flex-col justify-end gap-6">
-          <div className="compile-glass p-6 space-y-5">
+        {/* Right Col: Subtext Glass Card + CTAs (Solid background & high z-index to stay clear of 3D sphere) */}
+        <div className="lg:col-span-4 flex flex-col justify-end gap-6 relative z-20">
+          <div className="bg-[#0c0d14]/95 border border-[#d8dde6]/15 shadow-[0_16px_48px_rgba(0,0,0,0.85)] p-6 space-y-5 backdrop-blur-md">
             <div className="flex items-center justify-between border-b border-[#d8dde6]/10 pb-2">
               <span className="font-mono text-[10px] uppercase tracking-mono text-[#ff5b1f]">
                 INIT_MANIFEST.JSON
@@ -76,14 +76,14 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
               <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />
             </div>
 
-            <p className="text-xs sm:text-sm font-grotesk text-[#d8dde6]/80 leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm font-grotesk text-[#d8dde6]/85 leading-relaxed font-normal">
               {data.personal.subheadline}
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a
                 href="#projects"
-                className="group flex items-center bg-white hover:bg-[#d8dde6] text-[#07070a] font-mono text-[11px] font-bold uppercase tracking-mono transition-all"
+                className="group flex items-center bg-white hover:bg-[#d8dde6] text-[#07070a] font-mono text-[11px] font-bold uppercase tracking-mono transition-all shadow-sm"
               >
                 <span className="px-4 py-2.5">VIEW WORKS</span>
                 <span className="p-2.5 bg-[#ff5b1f] text-black group-hover:bg-[#ff723f] transition-colors">

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { portfolioData } from './data/portfolioData';
 import { CompileCanvas } from './components/compile/CompileCanvas';
 import { Navbar } from './components/layout/Navbar';
@@ -11,34 +12,54 @@ import { RoadmapAscent } from './components/roadmap/RoadmapAscent';
 import { Contact } from './components/sections/Contact';
 import { DevPerfOverlay } from './components/ui/DevPerfOverlay';
 import { useCompileStore } from './store/useCompileStore';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export const App: React.FC = () => {
   const data = portfolioData;
-  const setScrollProgress = useCompileStore((state) => state.setScrollProgress);
-  const setCursorPos = useCompileStore((state) => state.setCursorPos);
 
   useEffect(() => {
-    // 1. Initialize Lenis with lerp 0.08, synchronized with gsap.ticker
+    // 1. Configure ScrollTrigger to ignore mobile address-bar resize layout thrashing
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
+    // 2. Initialize Lenis with lerp 0.08, autoRaf: false (driven strictly by gsap.ticker)
     const lenis = new Lenis({
       lerp: 0.08,
+      autoRaf: false,
       smoothWheel: true,
     });
 
-    lenis.on('scroll', (e: any) => {
-      ScrollTrigger.update();
-      const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalScrollable > 0) {
-        const progress = e.scroll / totalScrollable;
-        setScrollProgress(progress);
-      }
+    // Strictly nothing else runs inside lenis.on('scroll')
+    lenis.on('scroll', ScrollTrigger.update);
+
+    // Cache total scrollable height (zero layout thrashing during scroll)
+    let cachedMaxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const updateDimensions = () => {
+      cachedMaxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    };
+
+    let resizeTimer: any;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(updateDimensions, 150);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+
+    // Refresh ScrollTrigger once after web fonts load
+    document.fonts.ready.then(() => {
+      updateDimensions();
+      ScrollTrigger.refresh();
     });
 
-    // Drive Lenis via GSAP ticker for frame-locked synchronization
-    const updateLenis = (time: number) => {
+    // Drive Lenis via GSAP ticker with lagSmoothing(0)
+    const updateTicker = (time: number) => {
       lenis.raf(time * 1000);
+      const scrollY = lenis.scroll || window.scrollY || 0;
+      const progress = scrollY / cachedMaxScroll;
+      useCompileStore.getState().setScrollProgress(progress);
     };
-    gsap.ticker.add(updateLenis);
+    gsap.ticker.add(updateTicker);
+    gsap.ticker.lagSmoothing(0);
 
     if (window.location.hash) {
       setTimeout(() => {
@@ -46,22 +67,23 @@ export const App: React.FC = () => {
       }, 120);
     }
 
-    // 2. Track mouse position for camera parallax
+    // Track mouse position directly into store without React renders
     const handleMouseMove = (e: MouseEvent) => {
-      setCursorPos(e.clientX, e.clientY);
+      useCompileStore.getState().setCursorPos(e.clientX, e.clientY);
     };
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
-      gsap.ticker.remove(updateLenis);
+      gsap.ticker.remove(updateTicker);
       lenis.destroy();
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [setScrollProgress, setCursorPos]);
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-[#07070a] text-[#d8dde6] overflow-x-hidden selection:bg-[#ff5b1f] selection:text-black font-grotesk antialiased">
-      {/* Dev Performance HUD Overlay (FPS, drawcalls, tier switch, active stage) */}
+      {/* Dev Performance HUD Overlay (Only rendered if ?debug is in URL) */}
       <DevPerfOverlay />
 
       {/* Fixed Full-Screen Three.js Canvas with Tier-Adaptive Bits Instanced Mesh */}

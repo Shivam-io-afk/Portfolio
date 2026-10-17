@@ -3,9 +3,9 @@ import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import CustomShaderMaterial from 'three-custom-shader-material';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { QualityTier, TIER_CONFIGS } from '../../config/gpuTiers';
 import { generateLayoutPositions } from './layoutGenerators';
 import { useCompileStore } from '../../store/useCompileStore';
-import { TIER_CONFIGS, QualityTier } from '../../config/gpuTiers';
 
 interface CompileBitsMeshProps {
   tier: QualityTier;
@@ -22,7 +22,7 @@ const vertexShader = `
   attribute float aScale;
   attribute float aTowerIdx;
 
-  uniform float uScrollProgress; // 0.0 to 1.0
+  uniform float uScrollProgress;
   uniform float uTime;
   uniform float uActiveTower;
   uniform float uHoveredSkill;
@@ -31,22 +31,13 @@ const vertexShader = `
   varying float vIsActiveTower;
   varying vec3 vWorldPos;
 
-  // Fast procedural curl approximation
-  vec3 curlNoise(vec3 p) {
-    float x = sin(p.y * 3.0 + uTime * 0.8) * cos(p.z * 2.5);
-    float y = sin(p.z * 3.0 + uTime * 0.9) * cos(p.x * 2.5);
-    float z = sin(p.x * 3.0 + uTime * 0.7) * cos(p.y * 2.5);
-    return vec3(x, y, z);
-  }
-
-  vec3 morphBetween(vec3 pStart, vec3 pEnd, float segProg, float seed) {
-    if (segProg <= 0.0) return pStart;
-    if (segProg >= 1.0) return pEnd;
-    float t = smoothstep(0.0, 1.0, clamp((segProg * 1.5) - seed * 0.5, 0.0, 1.0));
-    vec3 mid = mix(pStart, pEnd, t);
-    float swirl = sin(3.14159265 * t);
-    vec3 curl = curlNoise(mid * 0.6) * swirl * 0.7;
-    return mid + curl;
+  vec3 morphBetween(vec3 pA, vec3 pB, float t, float seed) {
+    float staggeredT = clamp((t - seed * 0.25) / 0.75, 0.0, 1.0);
+    float ease = smoothstep(0.0, 1.0, staggeredT);
+    vec3 mid = mix(pA, pB, ease);
+    float burst = sin(ease * 3.14159) * (0.35 + seed * 0.4);
+    vec3 dir = normalize(mid + vec3(sin(seed * 6.28), cos(seed * 6.28), sin(seed * 3.14)) * 0.5);
+    return mid + dir * burst;
   }
 
   void main() {
@@ -54,34 +45,29 @@ const vertexShader = `
 
     float p = clamp(uScrollProgress, 0.0, 1.0);
 
-    // Precise stage mapping matching page sections:
-    // Stage 0 (SOURCE): 0.00 to 0.14
-    // Morph 0->1: 0.14 to 0.22
-    // Stage 1 (BUILD): 0.22 to 0.38
-    // Morph 1->2: 0.38 to 0.46
-    // Stage 2 (NETWORK): 0.46 to 0.62
-    // Morph 2->3: 0.62 to 0.70
-    // Stage 3 (RUNTIME): 0.70 to 0.84
-    // Morph 3->4: 0.84 to 0.92
-    // Stage 4 (DEPLOY): 0.92 to 1.00
-
+    // Exact stage boundaries aligned to DOM sections:
+    // Stage 0 (Hero): 0.00 to 0.04
+    // Stage 1 (Works): 0.08 to 0.39
+    // Stage 2 (Skills): 0.42 to 0.51
+    // Stage 3 (Roadmap): 0.53 to 0.93
+    // Stage 4 (Contact): 0.96 to 1.00
     float s = 0.0;
-    if (p < 0.14) {
+    if (p < 0.04) {
       s = 0.0;
-    } else if (p < 0.22) {
-      s = smoothstep(0.14, 0.22, p);
-    } else if (p < 0.38) {
+    } else if (p < 0.08) {
+      s = smoothstep(0.04, 0.08, p);
+    } else if (p < 0.39) {
       s = 1.0;
-    } else if (p < 0.46) {
-      s = 1.0 + smoothstep(0.38, 0.46, p);
-    } else if (p < 0.62) {
+    } else if (p < 0.42) {
+      s = 1.0 + smoothstep(0.39, 0.42, p);
+    } else if (p < 0.51) {
       s = 2.0;
-    } else if (p < 0.70) {
-      s = 2.0 + smoothstep(0.62, 0.70, p);
-    } else if (p < 0.84) {
+    } else if (p < 0.53) {
+      s = 2.0 + smoothstep(0.51, 0.53, p);
+    } else if (p < 0.93) {
       s = 3.0;
-    } else if (p < 0.92) {
-      s = 3.0 + smoothstep(0.84, 0.92, p);
+    } else if (p < 0.96) {
+      s = 3.0 + smoothstep(0.93, 0.96, p);
     } else {
       s = 4.0;
     }
@@ -112,7 +98,7 @@ const vertexShader = `
       vIsActiveTower = 0.0;
     }
 
-    // Micro-float idle
+    // Subtle micro-float
     blendedPos += vec3(
       sin(uTime * 0.6 + aSeed * 6.28) * 0.02,
       cos(uTime * 0.5 + aSeed * 4.14) * 0.02,
@@ -140,7 +126,7 @@ const fragmentShader = `
       float pulse = 0.85 + 0.25 * sin(uTime * 3.0 + vWorldPos.x * 2.0);
       csm_Emissive = vec3(1.0, 0.357, 0.12) * 2.4 * pulse;
     } else if (vIsActiveTower > 0.5) {
-      float glow = 0.45 + 0.35 * sin(uTime * 4.0 + vWorldPos.y * 2.0);
+      float glow = 0.55 + 0.35 * sin(uTime * 4.0 + vWorldPos.y * 2.0);
       csm_Emissive = vec3(1.0, 0.4, 0.15) * glow;
     }
   }
@@ -150,9 +136,6 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<any>(null);
 
-  const scrollProgress = useCompileStore((state) => state.scrollProgress);
-  const activeTower = useCompileStore((state) => state.activeTower);
-
   const config = TIER_CONFIGS[tier];
   const count = config.bitCount; // Full 12000 count on ALL tiers
 
@@ -160,10 +143,8 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
   const { geometry, uniforms } = useMemo(() => {
     let baseGeo: THREE.BufferGeometry;
     if (config.boxSegments > 0) {
-      // Rounded box on HIGH tier with segments = 1
       baseGeo = new RoundedBoxGeometry(1, 1, 1, 1, 0.15);
     } else {
-      // 12 triangles BoxGeometry for MEDIUM/LOW (massive vertex saving)
       baseGeo = new THREE.BoxGeometry(1, 1, 1);
     }
 
@@ -190,11 +171,12 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
     return { geometry: instGeo, uniforms };
   }, [count, config.boxSegments]);
 
-  // Frame tick updates using MathUtils.damp for silky smooth interpolation
+  // Frame tick updates using MathUtils.damp - reads store directly with getState (ZERO React re-renders!)
   useFrame((_, delta) => {
     if (materialRef.current) {
+      const { scrollProgress, activeTower } = useCompileStore.getState();
+
       materialRef.current.uniforms.uTime.value += delta;
-      // Damped smooth transition using real delta
       materialRef.current.uniforms.uScrollProgress.value = THREE.MathUtils.damp(
         materialRef.current.uniforms.uScrollProgress.value,
         scrollProgress,
@@ -209,7 +191,6 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
     }
   });
 
-  // Base material selection according to tier
   const BaseMaterial =
     config.materialType === 'physical'
       ? THREE.MeshPhysicalMaterial
@@ -223,7 +204,7 @@ export const CompileBitsMesh: React.FC<CompileBitsMeshProps> = ({ tier }) => {
     <instancedMesh
       ref={meshRef}
       args={[geometry, undefined, count]}
-      frustumCulled={false} // Ensure single draw call without CPU frustum tests
+      frustumCulled={false}
     >
       <CSMComponent
         ref={materialRef}

@@ -21,7 +21,7 @@ export const SKILL_CLUSTER_EDGES: [number, number][] = [
 
 /**
  * Generate 5 layout position arrays for N instances.
- * Returns { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales }
+ * Returns { pos0, pos1, pos2, pos3, pos4, seeds, hotFlags, scales, towerIdxs }
  */
 export function generateLayoutPositions(count: number) {
   const pos0 = new Float32Array(count * 3);
@@ -37,16 +37,14 @@ export function generateLayoutPositions(count: number) {
   const goldenRatio = (1 + Math.sqrt(5)) / 2;
 
   // -------------------------------------------------------------
-  // LAYOUT 0: SOURCE (Fibonacci Sphere radius 2.2 + simplex noise)
+  // LAYOUT 0: SOURCE (Fibonacci Sphere radius ~1.85, shifted to X=0.95, Y=0.35)
+  // Keeps clear of right-hand intro card and left headline
   // -------------------------------------------------------------
   for (let i = 0; i < count; i++) {
-    // Random per-instance seed & hot bit assignment (~8%)
     seeds[i] = Math.random();
     hotFlags[i] = Math.random() < 0.08 ? 1.0 : 0.0;
-    // Scale 0.045 to 0.08
     scales[i] = 0.045 + Math.random() * 0.035;
 
-    // Fibonacci sphere distribution
     const y = 1 - (i / (count - 1)) * 2; // -1 to 1
     const radiusAtY = Math.sqrt(Math.max(0, 1 - y * y));
     const theta = (2 * Math.PI * i) / goldenRatio;
@@ -54,22 +52,21 @@ export function generateLayoutPositions(count: number) {
     const x = Math.cos(theta) * radiusAtY;
     const z = Math.sin(theta) * radiusAtY;
 
-    // Displaced sphere with high-frequency bump
+    // Displaced sphere with high-frequency surface wave
     const disp = Math.sin(x * 3.5 + y * 2.5) * Math.cos(z * 3.5) * 0.22;
     const r = 1.85 + disp;
 
-    // Shifted to right (X = 1.8) so left hero text does not overlap
-    pos0[i * 3 + 0] = x * r + 1.8;
-    pos0[i * 3 + 1] = y * r + 0.1;
+    pos0[i * 3 + 0] = x * r + 0.95;
+    pos0[i * 3 + 1] = y * r + 0.35;
     pos0[i * 3 + 2] = z * r;
   }
 
   // -------------------------------------------------------------
-  // LAYOUT 1: BUILD (4 Towers along X on floor Y=0)
-  // Tower 0: Onbuggy shop ring (X = -5.0)
-  // Tower 1: TaskFlow kanban columns (X = -1.8)
-  // Tower 2: Khatabook ledger page fan (X = 1.8)
-  // Tower 3: Zoom 3x3 screen grid (X = 5.0)
+  // LAYOUT 1: BUILD (4 Distinct Project Towers framing beside cards)
+  // Tower 0: Onbuggy ring of shop stalls (Right side X = +3.2, Card on Left)
+  // Tower 1: TaskFlow 3 kanban columns (Left side X = -3.2, Card on Right)
+  // Tower 2: Khatabook ledger page fan (Right side X = +3.2, Card on Left)
+  // Tower 3: Zoom 3x3 screen grid matrix (Left side X = -3.2, Card on Right)
   // -------------------------------------------------------------
   const perTower = Math.floor(count / 4);
   for (let i = 0; i < count; i++) {
@@ -81,35 +78,45 @@ export function generateLayoutPositions(count: number) {
     let x = 0, y = 0, z = 0;
 
     if (towerIdx === 0) {
-      // Onbuggy: Shop circular ring tower
-      const angle = norm * Math.PI * 18;
-      const ringRadius = 1.1 + Math.sin(norm * 22) * 0.25;
-      x = -5.0 + Math.cos(angle) * ringRadius;
-      y = norm * 6.0 - 2.8;
-      z = Math.sin(angle) * ringRadius;
+      // Tower 0 (Onbuggy): Ring of shop stalls / vendor market perimeter (Right X = +3.2)
+      const stallIdx = Math.floor(norm * 12);
+      const stallAngle = (stallIdx / 12) * Math.PI * 2;
+      const stallRadius = 1.9 + (localIdx % 3) * 0.28;
+      const jitterAngle = (localIdx % 10 - 5) * 0.04;
+      x = 3.2 + Math.cos(stallAngle + jitterAngle) * stallRadius;
+      y = ((localIdx % 24) / 24) * 3.2 - 1.4; // vendor stall vertical volume
+      z = Math.sin(stallAngle + jitterAngle) * stallRadius;
     } else if (towerIdx === 1) {
-      // TaskFlow: 3 kanban columns
-      const col = localIdx % 3;
-      const colHeight = Math.floor(localIdx / 3) / (perTower / 3);
-      x = -1.8 + (col - 1) * 0.7 + (Math.random() - 0.5) * 0.15;
-      y = colHeight * 6.0 - 2.8;
-      z = (Math.random() - 0.5) * 0.7;
+      // Tower 1 (TaskFlow): 3 Kanban board columns (Left X = -3.2)
+      const col = localIdx % 3; // 0, 1, 2
+      const colX = -3.2 + (col - 1) * 1.35;
+      const cardSlot = Math.floor(localIdx / 3) % 10;
+      const cardY = (cardSlot / 10) * 4.4 - 2.2;
+      x = colX + (Math.random() - 0.5) * 0.75;
+      y = cardY + (Math.random() - 0.5) * 0.25;
+      z = (Math.random() - 0.5) * 0.45;
     } else if (towerIdx === 2) {
-      // Khatabook: Ledger page fan
-      const fanAngle = (norm - 0.5) * 1.4;
-      const fanRad = 1.3 * (0.3 + (localIdx % 10) * 0.08);
-      x = 1.8 + Math.sin(fanAngle) * fanRad;
-      y = norm * 6.0 - 2.8;
-      z = Math.cos(fanAngle) * fanRad * 0.7;
+      // Tower 2 (Khatabook): Ledger page fan (Right X = +3.2)
+      const pageIdx = Math.floor(norm * 8); // 8 fanned pages
+      const pageAngle = (pageIdx / 8 - 0.5) * 1.45; // -40deg to +40deg
+      const pageU = (localIdx % 80) / 80;
+      const pageV = (Math.floor(localIdx / 80) % 25) / 25;
+      const rad = 0.6 + pageU * 1.7;
+      x = 3.2 + Math.sin(pageAngle) * rad;
+      y = pageV * 4.2 - 2.1;
+      z = Math.cos(pageAngle) * rad * 0.8;
     } else {
-      // Zoom: 3x3 screen grid array
-      const cell = localIdx % 9;
-      const row = Math.floor(cell / 3);
-      const col = cell % 3;
-      const depth = Math.floor(localIdx / 9) / (perTower / 9);
-      x = 5.0 + (col - 1) * 0.6 + (Math.random() - 0.5) * 0.1;
-      y = (row - 1) * 0.9 + depth * 3.8 - 1.6;
-      z = (Math.random() - 0.5) * 0.5;
+      // Tower 3 (Zoom): 3x3 screen video wall matrix (Left X = -3.2)
+      const screenIdx = localIdx % 9; // 0 to 8
+      const screenCol = screenIdx % 3;
+      const screenRow = Math.floor(screenIdx / 3);
+      const screenCenterX = -3.2 + (screenCol - 1) * 1.35;
+      const screenCenterY = (screenRow - 1) * 1.25;
+      const u = (localIdx % 28) / 28 - 0.5;
+      const v = (Math.floor(localIdx / 28) % 18) / 18 - 0.5;
+      x = screenCenterX + u * 1.15;
+      y = screenCenterY + v * 0.85;
+      z = (Math.random() - 0.5) * 0.22;
     }
 
     pos1[i * 3 + 0] = x;
@@ -121,21 +128,18 @@ export function generateLayoutPositions(count: number) {
   // LAYOUT 2: NETWORK (Skills clusters spread wider R=4.5 - 5.0)
   // -------------------------------------------------------------
   for (let i = 0; i < count; i++) {
-    // 70% in skill cluster clouds, 30% along interconnecting arcs
     const inCluster = i < count * 0.72;
     if (inCluster) {
       const clusterIdx = i % SKILL_CLUSTER_CENTERS.length;
       const center = SKILL_CLUSTER_CENTERS[clusterIdx];
-      // Gaussian cluster distribution
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      const rad = Math.pow(Math.random(), 0.6) * 1.35; // Wider spread
+      const rad = Math.pow(Math.random(), 0.6) * 1.35;
 
       pos2[i * 3 + 0] = center.x + rad * Math.sin(phi) * Math.cos(theta);
       pos2[i * 3 + 1] = center.y + rad * Math.sin(phi) * Math.sin(theta);
       pos2[i * 3 + 2] = center.z + rad * Math.cos(phi);
     } else {
-      // Along line segments between cluster pairs
       const edge = SKILL_CLUSTER_EDGES[i % SKILL_CLUSTER_EDGES.length];
       const pA = SKILL_CLUSTER_CENTERS[edge[0]];
       const pB = SKILL_CLUSTER_CENTERS[edge[1]];
@@ -155,12 +159,11 @@ export function generateLayoutPositions(count: number) {
     const progress = i / count;
     const angle = progress * Math.PI * 12 + strand;
     const rad = 1.6 + (Math.random() - 0.5) * 0.25;
-    const y = progress * 14.0 - 7.0; // from -7 to +7
+    const y = progress * 14.0 - 7.0;
 
-    // Also inject 4 milestone torus rings at y = -4, -1.5, 1.5, 4.5
-    const isRing = i % 30 < 4;
+    const isRing = (i % 80) < 18;
     if (isRing) {
-      const ringHeights = [-4.2, -1.4, 1.6, 4.4];
+      const ringHeights = [-4.0, -1.5, 1.5, 4.5];
       const targetH = ringHeights[i % ringHeights.length];
       const ringAngle = (i % 60) * ((Math.PI * 2) / 60);
       pos3[i * 3 + 0] = Math.cos(ringAngle) * 2.3;
@@ -174,26 +177,27 @@ export function generateLayoutPositions(count: number) {
   }
 
   // -------------------------------------------------------------
-  // LAYOUT 4: DEPLOY (Thin beacon column 0.4x6 + ripple disc floor)
+  // LAYOUT 4: DEPLOY (Beacon column + floor ripple rings shifted to RIGHT X = +3.6)
+  // Keeps clear of the contact form on the left
   // -------------------------------------------------------------
   for (let i = 0; i < count; i++) {
     const isColumn = i < count * 0.55;
     if (isColumn) {
-      // Beacon cylinder
+      // Beacon cylinder standing at X = +3.6
       const angle = Math.random() * Math.PI * 2;
       const radius = Math.pow(Math.random(), 0.5) * 0.45;
       const y = (i / (count * 0.55)) * 6.5 - 3.0;
 
-      pos4[i * 3 + 0] = Math.cos(angle) * radius;
+      pos4[i * 3 + 0] = Math.cos(angle) * radius + 3.6;
       pos4[i * 3 + 1] = y;
       pos4[i * 3 + 2] = Math.sin(angle) * radius;
     } else {
-      // Expanding concentric ripple rings on the floor Y = -2.8
-      const ringIdx = (i % 6) + 1; // 6 rings
+      // Concentric ripple rings on the floor centered at X = +3.6
+      const ringIdx = (i % 6) + 1;
       const ringRadius = ringIdx * 0.85 + (Math.random() - 0.5) * 0.12;
       const angle = Math.random() * Math.PI * 2;
 
-      pos4[i * 3 + 0] = Math.cos(angle) * ringRadius;
+      pos4[i * 3 + 0] = Math.cos(angle) * ringRadius + 3.6;
       pos4[i * 3 + 1] = -2.8 + (Math.random() - 0.5) * 0.08;
       pos4[i * 3 + 2] = Math.sin(angle) * ringRadius;
     }
