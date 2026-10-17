@@ -13,6 +13,7 @@ import { Contact } from './components/sections/Contact';
 import { DevPerfOverlay } from './components/ui/DevPerfOverlay';
 import { CompileBootLoader } from './components/compile/CompileBootLoader';
 import { StageBackgroundWord } from './components/compile/StageBackgroundWord';
+import { ProjectDeepDiveModal } from './components/sections/ProjectDeepDiveModal';
 import { useCompileStore } from './store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -99,6 +100,9 @@ export const App: React.FC = () => {
 
       {/* Header / HUD Navigation with Monogram [ SM ], Build Passing Pill, IST Clock */}
       <Navbar availability={data.personal.availability} />
+
+      {/* Full-Screen Architectural Deep Dive Case Study Overlay */}
+      <ProjectDeepDiveModal projects={data.projects} />
 
       {/* Landing Page Content Layers */}
       <main className="relative z-10">

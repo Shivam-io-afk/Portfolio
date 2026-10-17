@@ -21,6 +21,13 @@ export interface CompileState {
   textSpellProgress: number; // 0.0 -> 1.0
   shockwaveProgress: number; // 0.0 -> 1.0
   scanBeamProgress: number;  // 0.0 -> 1.0
+
+  // Phase 3: Projects That Impress
+  activeDeepDiveId: string | null;
+  isDeepDiveOpen: boolean;
+  towerAssemblyProgress: number; // 0.0 -> 1.0
+  openDeepDive: (projectId: string) => void;
+  closeDeepDive: () => void;
   
   setScrollProgress: (progress: number) => void;
   setActiveStage: (stage: StageId) => void;
@@ -70,6 +77,10 @@ export const useCompileStore = create<CompileState>((set, get) => {
     shockwaveProgress: 0,
     scanBeamProgress: 0,
 
+    activeDeepDiveId: null,
+    isDeepDiveOpen: false,
+    towerAssemblyProgress: 1.0,
+
     terminalLogs: [
       'INIT_SYSTEM: Initializing runtime pipeline...',
       'RESOLVE: Host architecture [x86_64-win32-v8]',
@@ -99,12 +110,54 @@ export const useCompileStore = create<CompileState>((set, get) => {
         if (stage !== get().activeStage) {
           get().triggerScanBeam();
         }
+        if (tower !== get().activeTower) {
+          (get() as any).towerAssemblyProgress = 0.01;
+          let start: number | null = null;
+          const dur = 600;
+          const step = (ts: number) => {
+            if (!start) start = ts;
+            const p = Math.min(1, (ts - start) / dur);
+            (get() as any).towerAssemblyProgress = p;
+            if (p < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
         set({ scrollProgress: clamped, activeStage: stage, activeTower: tower });
       }
     },
 
     setActiveStage: (stage) => set({ activeStage: stage }),
-    setActiveTower: (tower) => set({ activeTower: tower }),
+    setActiveTower: (tower) => {
+      if (tower !== get().activeTower) {
+        (get() as any).towerAssemblyProgress = 0.01;
+        let start: number | null = null;
+        const dur = 600;
+        const step = (ts: number) => {
+          if (!start) start = ts;
+          const p = Math.min(1, (ts - start) / dur);
+          (get() as any).towerAssemblyProgress = p;
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        set({ activeTower: tower });
+      }
+    },
+    openDeepDive: (projectId) => {
+      try {
+        if (typeof window !== 'undefined') {
+          window.location.hash = `#project/${projectId}`;
+        }
+      } catch {}
+      set({ isDeepDiveOpen: true, activeDeepDiveId: projectId });
+    },
+    closeDeepDive: () => {
+      try {
+        if (typeof window !== 'undefined') {
+          window.history.pushState(null, '', window.location.pathname + window.location.search);
+        }
+      } catch {}
+      set({ isDeepDiveOpen: false, activeDeepDiveId: null });
+    },
     setHoveredSkillNode: (skill) => set({ hoveredSkillNode: skill }),
     setCursorPos: (x, y) => {
       (get() as any).cursorPos = { x, y };

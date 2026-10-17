@@ -8,6 +8,7 @@ import { CompileBitsMesh } from './CompileBitsMesh';
 import { HeroCoreStage0 } from './HeroCoreStage0';
 import { NetworkGraphEdges } from './NetworkGraphEdges';
 import { AtmosphereElements } from './AtmosphereElements';
+import { HolographicTowerLabel } from './HolographicTowerLabel';
 import { ProceduralEnvironment } from './ProceduralEnvironment';
 import { AdaptiveFramePacer } from './AdaptiveFramePacer';
 import { TIER_CONFIGS } from '../../config/gpuTiers';
@@ -138,6 +139,16 @@ const CameraRig: React.FC = () => {
       ly = -0.6;
     }
 
+    // 1.2s camera flight into active project tower when deep-dive is open
+    if (useCompileStore.getState().isDeepDiveOpen) {
+      const towerX = activeTower % 2 === 1 ? -3.2 : 3.2;
+      cx = towerX;
+      cy = 0.4;
+      cz = 3.6;
+      lx = towerX;
+      ly = 0.4;
+    }
+
     targetPos.current.set(cx, cy, cz);
     targetLookAt.current.set(lx + mx * 0.25, ly + my * 0.25, 0);
 
@@ -220,6 +231,9 @@ export const CompileCanvas: React.FC = () => {
 
         {/* Stage 2 Network Graph Lines + Light Pulses */}
         <NetworkGraphEdges />
+
+        {/* Stage 1 Holographic Tower Label floating above active project */}
+        <HolographicTowerLabel />
 
         {/* The Bits Instanced Mesh (12,000 bits morphing across all 5 layouts) */}
         <CompileBitsMesh tier={qualityTier} />
