@@ -206,6 +206,7 @@ export const App: React.FC = () => {
       {/* Slim floating glass bar SiteNav with sliding pill, progress line and mobile drawer */}
       <SiteNav
         resumeHref="https://drive.google.com/file/d/1zZPCChlTaYZSdnu78lJLoZvV-AgCJFJJ/view?usp=sharing"
+        hireTarget="contact-form"
         links={[{ id: 'projects', label: 'Works' }, { id: 'skills', label: 'Arsenal' }, { id: 'experience', label: 'Trajectory' }, { id: 'contact', label: 'Contact' }]}
       />
 

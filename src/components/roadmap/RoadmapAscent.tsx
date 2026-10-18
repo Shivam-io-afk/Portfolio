@@ -99,9 +99,18 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
   const activeMilestone: Milestone = MILESTONES[activeIndex] || MILESTONES[0];
 
   const handleHireMeClick = () => {
-    const contactElem = document.getElementById('contact');
-    if (contactElem) {
-      contactElem.scrollIntoView();
+    const el = document.getElementById('contact-form') || document.getElementById('contact');
+    if (el) {
+      const lenis = (window as any).lenis;
+      if (lenis) {
+        lenis.scrollTo(el, { offset: -85 });
+      } else {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      setTimeout(() => {
+        const input = el.querySelector<HTMLInputElement | HTMLTextAreaElement>('input:not([type="hidden"]), textarea');
+        input?.focus({ preventScroll: true });
+      }, 550);
     } else {
       window.location.href = 'mailto:shivam.m28737@gmail.com?subject=Full-Stack%20Role%20Inquiry';
     }

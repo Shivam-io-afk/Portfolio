@@ -182,8 +182,17 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
           </div>
 
           {/* Right Column: Transmission Form */}
-          <div className="lg:col-span-7">
+          <div id="contact-form" className="lg:col-span-7 scroll-mt-24">
             <div className="compile-card p-6 sm:p-8">
+              <div className="flex items-center justify-between pb-3 mb-5 border-b border-[#d8dde6]/10">
+                <span className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60">
+                  TRANSMISSION PROTOCOL // INQUIRY FORM
+                </span>
+                <span className="font-mono text-[10px] text-[#ff5b1f] tracking-mono flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] animate-pulse" />
+                  DIRECT DISPATCH
+                </span>
+              </div>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>

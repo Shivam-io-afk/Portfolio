@@ -124,7 +124,7 @@ export default function SiteNav({
   initials = 'SM',
   links = DEFAULT_LINKS,
   resumeHref = 'https://drive.google.com/file/d/1zZPCChlTaYZSdnu78lJLoZvV-AgCJFJJ/view?usp=sharing',
-  hireTarget = 'contact',
+  hireTarget = 'contact-form',
   email = 'shivam.m28737@gmail.com',
 }: SiteNavProps) {
   const [active, setActive] = useState(-1);
@@ -201,9 +201,21 @@ export default function SiteNav({
     e.preventDefault();
     setOpen(false);
     const lenis = (window as unknown as { lenis?: { scrollTo: (t: Element, o?: object) => void } }).lenis;
-    if (lenis) lenis.scrollTo(el, { offset: -10 });
-    else el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const isTargetingForm = id === 'contact-form' || id === hireTarget;
+    const offset = isTargetingForm ? -85 : -10;
+    if (lenis) {
+      lenis.scrollTo(el, { offset });
+    } else {
+      el.scrollIntoView({ behavior: 'smooth', block: isTargetingForm ? 'center' : 'start' });
+    }
     history.replaceState(null, '', `#${id}`);
+
+    if (isTargetingForm) {
+      setTimeout(() => {
+        const input = el.querySelector<HTMLInputElement | HTMLTextAreaElement>('input:not([type="hidden"]), textarea');
+        input?.focus({ preventScroll: true });
+      }, 550);
+    }
   };
 
   return (
