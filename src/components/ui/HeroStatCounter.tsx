@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { RollNumber } from './TextHoverKit';
 
 interface HeroStatCounterProps {
   value: string;
@@ -211,38 +212,64 @@ export const HeroStatCounter: React.FC<HeroStatCounterProps> = ({ value, label }
     return () => clearInterval(interval);
   }, [triggered, value, reducedMotion, isActive, isInView]);
 
+  const [isSettled, setIsSettled] = useState(false);
+
+  useEffect(() => {
+    if (!triggered) return;
+    if (reducedMotion) {
+      setIsSettled(true);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsSettled(true);
+    }, 750);
+    return () => clearTimeout(timer);
+  }, [triggered, reducedMotion]);
+
+  // Match numeric stats like "2+ Yrs" -> ["2+", "Yrs"] or "7.0 CGPA" -> ["7.0", "CGPA"]
+  const match = value.match(/^([\d.+]+)\s*(.*)$/);
+
   let digitCount = 0;
 
   return (
-    <div ref={containerRef} className="flex items-baseline gap-2 font-mono">
-      <div className="flex items-baseline text-base sm:text-lg font-bold text-[#ff5b1f] tracking-tight">
-        {value.split('').map((char, index) => {
-          const isDigit = /\d/.test(char);
-          if (isDigit) {
-            const stagger = digitCount * 80;
-            digitCount++;
-            return (
-              <FlapDigit
-                key={index}
-                targetDigit={char}
-                trigger={triggered}
-                reducedMotion={reducedMotion}
-                staggerMs={stagger}
-                isActive={isActive}
-              />
-            );
-          }
+    <div ref={containerRef} className="flex items-baseline gap-2 font-mono group">
+      <div className="flex items-baseline text-base sm:text-lg font-bold text-[#ff5b1f] tracking-tight cursor-default">
+        {isSettled && match ? (
+          <>
+            <RollNumber value={match[1]} />
+            {match[2] && <span className="ml-1 inline-block">{match[2]}</span>}
+          </>
+        ) : isSettled && !match ? (
+          <span className="inline-block">{value}</span>
+        ) : (
+          value.split('').map((char, index) => {
+            const isDigit = /\d/.test(char);
+            if (isDigit) {
+              const stagger = digitCount * 80;
+              digitCount++;
+              return (
+                <FlapDigit
+                  key={index}
+                  targetDigit={char}
+                  trigger={triggered}
+                  reducedMotion={reducedMotion}
+                  staggerMs={stagger}
+                  isActive={isActive}
+                />
+              );
+            }
 
-          // Non-digit character
-          return (
-            <span
-              key={index}
-              className={char === ' ' ? 'inline-block w-1.5' : 'inline-block'}
-            >
-              {triggered ? scrambleChars[index] || char : char}
-            </span>
-          );
-        })}
+            // Non-digit character
+            return (
+              <span
+                key={index}
+                className={char === ' ' ? 'inline-block w-1.5' : 'inline-block'}
+              >
+                {triggered ? scrambleChars[index] || char : char}
+              </span>
+            );
+          })
+        )}
       </div>
       <span className="text-[10px] uppercase tracking-mono text-[#d8dde6]/50">
         {label}

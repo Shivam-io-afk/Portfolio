@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { BitDissolve } from './TextHoverKit';
 
 export interface CompileHeadingProps {
   text: string;
@@ -248,16 +249,17 @@ export const CompileHeading: React.FC<CompileHeadingProps> = ({
             if (cursor) {
               cursor.style.display = 'none';
             }
-            // Trigger compile-pulse event & onCompiled
-            try {
-              window.dispatchEvent(new CustomEvent('compile-pulse'));
-            } catch {
-              // ignore
-            }
-            onCompiled?.();
 
-            // After completion, replace LIVE layer with plain final text (clean up spans)
+            // After completion, replace with DecodeText
             setIsCompleted(true);
+            setTimeout(() => {
+              try {
+                window.dispatchEvent(new CustomEvent('compile-pulse'));
+              } catch {
+                // ignore
+              }
+              onCompiled?.();
+            }, 0);
           },
         });
       },
@@ -531,6 +533,18 @@ export const CompileHeading: React.FC<CompileHeadingProps> = ({
     };
   }, []);
 
+  if (isCompleted || reducedMotion) {
+    return (
+      <BitDissolve
+        as={Component}
+        text={text}
+        accent={accent}
+        accentOnNewLine={accentOnNewLine}
+        className={className}
+      />
+    );
+  }
+
   return (
     <Component
       ref={containerRef as any}
@@ -575,7 +589,7 @@ export const CompileHeading: React.FC<CompileHeadingProps> = ({
                 {'\u00A0'}
               </span>
             )}
-            <span className="italic font-serif text-[#ff5b1f] sm:pl-3 font-normal inline-block">
+            <span className="italic font-serif text-[#ff5b1f] font-normal inline-block">
               {charList
                 .filter((c) => c.isAccent)
                 .map((c) => (

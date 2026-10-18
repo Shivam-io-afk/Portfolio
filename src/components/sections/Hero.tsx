@@ -9,6 +9,7 @@ import { HeroStatCounter } from '../ui/HeroStatCounter';
 import { ArrowUpRight, GitBranch, Terminal } from 'lucide-react';
 import { MagneticButton } from '../ui/MagneticButton';
 import { DirectionalButton } from '../ui/DirectionalButton';
+import { BracketLink } from '../ui/TextHoverKit';
 
 interface HeroProps {
   data: PortfolioData;
@@ -31,8 +32,8 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
       const headingEl = document.querySelector('#hero h1');
       if (!headingEl) return;
 
-      // Get all per-letter character spans from ghost/live layer
-      const letterEls = Array.from(headingEl.querySelectorAll<HTMLSpanElement>('[data-gchar]'))
+      // Get all per-letter character spans from BitDissolve (.thk-bd-c) or ghost/live layer
+      const letterEls = Array.from(headingEl.querySelectorAll<HTMLSpanElement>('.thk-bd-c, .dt-c, [data-gchar]'))
         .filter((el) => el.textContent && el.textContent.trim() !== '');
 
       if (letterEls.length === 0) return;
@@ -157,7 +158,7 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
       <div className="flex items-center justify-between border-b border-[#d8dde6]/10 pb-3">
         <div className="flex items-center gap-2.5 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#d8dde6]/80">
           <span className="w-2 h-2 rounded-full bg-[#ff5b1f] shadow-signal-glow-sm animate-pulse shrink-0" />
-          <CompileLabel text="STAGE 00 /// SOURCE.INIT" />
+          <CompileLabel text="STAGE 00 /// SOURCE.INIT" alt="MERN · Rewa, India" />
           <span className="text-[#d8dde6]/30 hidden sm:inline">///</span>
           <span className="text-[#d8dde6]/50 hidden sm:inline">{data.personal.location}</span>
         </div>
@@ -237,19 +238,17 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
               </MagneticButton>
 
               <MagneticButton>
-                <DirectionalButton
-                  as="a"
+                <BracketLink
                   href={data.personal.socials.github}
                   target="_blank"
                   rel="noreferrer"
-                  fillColor="orange"
-                  className="border border-[#d8dde6]/20 bg-[#121318] text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono shadow-sm"
+                  className="border border-[#d8dde6]/20 bg-[#121318] text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono shadow-sm px-3.5 py-2.5"
                 >
-                  <div className="flex items-center gap-2 px-3.5 py-2.5">
+                  <span className="flex items-center gap-2">
                     <GitBranch className="w-3.5 h-3.5 text-[#ff5b1f]" />
                     <span>GITHUB</span>
-                  </div>
-                </DirectionalButton>
+                  </span>
+                </BracketLink>
               </MagneticButton>
             </div>
           </div>

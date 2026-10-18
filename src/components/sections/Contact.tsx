@@ -10,6 +10,7 @@ import { MagneticButton } from '../ui/MagneticButton';
 import { DirectionalButton } from '../ui/DirectionalButton';
 import { ResumeBundlerButton } from '../ui/ResumeBundlerButton';
 import ScrollMarquee from '../ui/ScrollMarquee';
+import { BracketLink } from '../ui/TextHoverKit';
 import { useCompileStore } from '../../store/useCompileStore';
 
 interface ContactProps {
@@ -106,7 +107,7 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
         >
           <div className="flex items-center gap-2 mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
-            <CompileLabel text="STAGE 04 /// DEPLOY.TRANSMISSION" />
+            <CompileLabel text="STAGE 04 /// DEPLOY.TRANSMISSION" alt="replies within 24h" />
           </div>
           <CompileHeading
             as="h2"
@@ -195,35 +196,31 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
                     EXTERNAL PORTALS
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    <DirectionalButton
-                      as="a"
+                    <BracketLink
                       href={personal.socials.github}
                       target="_blank"
                       rel="noreferrer"
-                      fillColor="orange"
-                      className="border border-[#d8dde6]/15 bg-[#07070a]/60 text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono"
+                      className="border border-[#d8dde6]/15 bg-[#07070a]/60 text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono px-3 py-1.5"
                     >
-                      <div className="flex items-center gap-2 px-3 py-1.5">
+                      <span className="flex items-center gap-2">
                         <GitBranch className="w-3.5 h-3.5 text-[#ff5b1f]" />
                         <span>GitHub</span>
                         <ArrowUpRight className="w-3 h-3 arrow-nudge" />
-                      </div>
-                    </DirectionalButton>
+                      </span>
+                    </BracketLink>
 
                     {personal.socials.linkedin && (
-                      <DirectionalButton
-                        as="a"
+                      <BracketLink
                         href={personal.socials.linkedin}
                         target="_blank"
                         rel="noreferrer"
-                        fillColor="orange"
-                        className="border border-[#d8dde6]/15 bg-[#07070a]/60 text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono"
+                        className="border border-[#d8dde6]/15 bg-[#07070a]/60 text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono px-3 py-1.5"
                       >
-                        <div className="flex items-center gap-2 px-3 py-1.5">
+                        <span className="flex items-center gap-2">
                           <span>LinkedIn</span>
                           <ArrowUpRight className="w-3 h-3 text-[#ff5b1f] arrow-nudge" />
-                        </div>
-                      </DirectionalButton>
+                        </span>
+                      </BracketLink>
                     )}
                   </div>
                 </div>

@@ -124,7 +124,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
       <section id="experience" className="relative py-24 px-4 sm:px-10 max-w-6xl mx-auto z-10 text-[#d8dde6]">
         <div className="flex items-center gap-2 mb-3">
           <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
-          <CompileLabel text="STAGE 03 /// ROADMAP.ASCENT" />
+          <CompileLabel text="STAGE 03 /// ROADMAP.ASCENT" alt="Jun '22 → now" />
         </div>
         <CompileHeading
           as="h2"
@@ -187,7 +187,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#ff5b1f] animate-ping shrink-0" />
-              <CompileLabel text="STAGE 03 /// RUNTIME.TRAJECTORY" />
+              <CompileLabel text="STAGE 03 /// RUNTIME.TRAJECTORY" alt="Jun '22 → now" />
             </div>
             <span className="hidden sm:inline text-[#d8dde6]/20 font-mono">|</span>
             <span className="hidden sm:inline font-mono text-[11px] uppercase tracking-mono text-[#d8dde6]/60">

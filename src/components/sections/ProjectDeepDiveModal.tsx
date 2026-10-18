@@ -15,6 +15,7 @@ import type { Project } from '../../data/portfolioData';
 import { useCompileStore } from '../../store/useCompileStore';
 import { CompileHeading } from '../ui/CompileHeading';
 import { CompileLabel } from '../ui/CompileLabel';
+import { BracketLink } from '../ui/TextHoverKit';
 
 interface ProjectDeepDiveModalProps {
   projects: Project[];
@@ -158,7 +159,7 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
 
         <div className="flex items-center gap-3">
           {activeProject.githubUrl && (
-            <a
+            <BracketLink
               href={activeProject.githubUrl}
               target="_blank"
               rel="noreferrer"
@@ -167,7 +168,7 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
               <GitBranch className="w-3.5 h-3.5" />
               <span>SOURCE REPO</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
+            </BracketLink>
           )}
         </div>
       </div>

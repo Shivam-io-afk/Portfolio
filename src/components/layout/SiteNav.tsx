@@ -12,6 +12,7 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DirectionalButton } from '../ui/DirectionalButton';
+import { BracketLink } from '../ui/TextHoverKit';
 
 export type NavLink = { id: string; label: string };
 
@@ -311,15 +312,15 @@ export default function SiteNav({
           </a>
         ))}
         <div className="snav-sheet-foot">
-          <a
+          <BracketLink
             className="snav-ghost snav-a"
             href={resumeHref}
             target="_blank"
             rel="noreferrer"
             tabIndex={open ? 0 : -1}
           >
-            Résumé ↗
-          </a>
+            View resume ↗
+          </BracketLink>
           <a className="snav-ghost snav-a" href={`mailto:${email}`} tabIndex={open ? 0 : -1}>
             Email ↗
           </a>

@@ -19,7 +19,7 @@ import { CrosshairCursor } from './components/ui/CrosshairCursor';
 import { GitLogFooter } from './components/ui/GitLogFooter';
 import { SegmentationFault404 } from './components/ui/SegmentationFault404';
 import { MobileTiltController } from './components/ui/MobileTiltController';
-import { GiantFooterWordmark } from './components/ui/GiantFooterWordmark';
+import { WordmarkSpotlight } from './components/ui/TextHoverKit';
 import { useCompileStore, StageId } from './store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -288,8 +288,10 @@ export const App: React.FC = () => {
         {/* Real GitHub Git Log cached 1hr */}
         <GitLogFooter />
 
-        {/* Giant Footer Wordmark */}
-        <GiantFooterWordmark />
+        {/* Wordmark Spotlight */}
+        <div className="w-full overflow-hidden mt-6 sm:mt-10 -mb-[3.5vw]">
+          <WordmarkSpotlight text="SHIVAM" />
+        </div>
       </footer>
 
       {/* Interactive Scripted 'Ask Shivam' Terminal Shell (Press /) */}

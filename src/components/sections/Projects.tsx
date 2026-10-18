@@ -5,6 +5,7 @@ import { ArrowUpRight, GitBranch, Layers } from 'lucide-react';
 import type { Project } from '../../data/portfolioData';
 import { CompileHeading } from '../ui/CompileHeading';
 import { CompileLabel } from '../ui/CompileLabel';
+import { BitDissolve, BracketLink } from '../ui/TextHoverKit';
 import { DirectionalButton } from '../ui/DirectionalButton';
 import { useCompileStore } from '../../store/useCompileStore';
 
@@ -334,7 +335,7 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] animate-pulse shrink-0" />
-            <CompileLabel text="STAGE 01 /// BUILD.TOWERS" />
+            <CompileLabel text="STAGE 01 /// BUILD.TOWERS" alt="5 projects shipped" />
           </div>
           <CompileHeading
             as="h2"
@@ -518,9 +519,11 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
 
                     {/* Title & Description */}
                     <div>
-                      <h3 className="font-grotesk text-2xl sm:text-3xl font-bold text-white group-hover:text-[#ff5b1f] transition-colors leading-tight mb-1">
-                        {project.title}
-                      </h3>
+                      <BitDissolve
+                        as="h3"
+                        text={project.title}
+                        className="font-grotesk text-2xl sm:text-3xl font-bold text-white group-hover:text-[#ff5b1f] transition-colors leading-tight mb-1"
+                      />
                       <div className="font-mono text-xs text-[#ff5b1f]/90 mb-2">
                         {project.subtitle}
                       </div>
@@ -555,20 +558,18 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
 
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {project.githubUrl && (
-                          <DirectionalButton
-                            as="a"
+                          <BracketLink
                             href={project.githubUrl}
                             target="_blank"
                             rel="noreferrer"
-                            fillColor="orange"
-                            className="border border-white/[0.15] bg-[#121318] text-white font-mono text-[10px] sm:text-[11px] uppercase tracking-mono"
+                            className="border border-white/[0.15] bg-[#121318] text-white font-mono text-[10px] sm:text-[11px] uppercase tracking-mono px-3 py-1.5"
                           >
-                            <div className="flex items-center gap-1.5 px-3 py-1.5">
+                            <span className="flex items-center gap-1.5">
                               <GitBranch className="w-3 h-3 text-[#ff5b1f]" />
                               <span>CODE</span>
                               <ArrowUpRight className="w-3 h-3" />
-                            </div>
-                          </DirectionalButton>
+                            </span>
+                          </BracketLink>
                         )}
 
                         <DirectionalButton

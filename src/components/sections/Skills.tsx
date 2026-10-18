@@ -88,7 +88,7 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
-            <CompileLabel text="STAGE 02 /// ARSENAL.CONSTELLATION" />
+            <CompileLabel text="STAGE 02 /// ARSENAL.CONSTELLATION" alt="24 skills · 17 repos" />
           </div>
           <CompileHeading
             as="h2"

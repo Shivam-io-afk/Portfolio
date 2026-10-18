@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { RollNumber } from '../ui/TextHoverKit';
 
 interface SplitFlapCounterProps {
   value: number;
@@ -76,12 +77,25 @@ export const SplitFlapCounter: React.FC<SplitFlapCounterProps> = ({
 }) => {
   const fullStr = `${value}${suffix}`;
   const prevStrRef = useRef<string>(fullStr);
+  const [isSettled, setIsSettled] = useState(false);
   const [chars, setChars] = useState<string[]>(fullStr.split(''));
 
   useEffect(() => {
     setChars(fullStr.split(''));
     prevStrRef.current = fullStr;
-  }, [fullStr]);
+    setIsSettled(false);
+
+    if (isReducedMotion) {
+      setIsSettled(true);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setIsSettled(true);
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [fullStr, isReducedMotion]);
 
   // Count total digits for right-to-left stagger calculation
   const digitIndices: number[] = [];
@@ -107,27 +121,34 @@ export const SplitFlapCounter: React.FC<SplitFlapCounterProps> = ({
 
       {/* Huge Counter Numerals */}
       <div className="flex items-center text-6xl sm:text-8xl md:text-[105px] font-bold tracking-tight text-white font-grotesk leading-none tabular-nums">
-        {chars.map((char, index) => {
-          const isDigit = /\d/.test(char);
-          const digitPos = digitIndices.indexOf(index);
-          // Stagger right-to-left: rightmost flips first
-          const rightToLeftIndex = digitPos !== -1 ? totalDigits - 1 - digitPos : 0;
-          const staggerDelayMs = rightToLeftIndex * 40;
+        {isSettled ? (
+          <RollNumber
+            value={fullStr}
+            className="cursor-default"
+          />
+        ) : (
+          chars.map((char, index) => {
+            const isDigit = /\d/.test(char);
+            const digitPos = digitIndices.indexOf(index);
+            // Stagger right-to-left: rightmost flips first
+            const rightToLeftIndex = digitPos !== -1 ? totalDigits - 1 - digitPos : 0;
+            const staggerDelayMs = rightToLeftIndex * 40;
 
-          const prevChars = prevStrRef.current.split('');
-          const prevChar = prevChars[index] || char;
+            const prevChars = prevStrRef.current.split('');
+            const prevChar = prevChars[index] || char;
 
-          return (
-            <SplitFlapChar
-              key={`${index}-${char}`}
-              char={char}
-              prevChar={prevChar}
-              isDigit={isDigit}
-              staggerDelayMs={staggerDelayMs}
-              isReducedMotion={isReducedMotion}
-            />
-          );
-        })}
+            return (
+              <SplitFlapChar
+                key={`${index}-${char}`}
+                char={char}
+                prevChar={prevChar}
+                isDigit={isDigit}
+                staggerDelayMs={staggerDelayMs}
+                isReducedMotion={isReducedMotion}
+              />
+            );
+          })
+        )}
       </div>
 
       {/* Counter Descriptor Label Underneath */}

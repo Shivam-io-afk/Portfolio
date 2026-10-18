@@ -103,7 +103,14 @@ export const CrosshairCursor: React.FC = () => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
-      // 1. Check if hovering navbar, open case study modal, terminal or overlay
+      // 1. Check if hovering BitDissolve / text hover headings (always text caret)
+      const isTextHeading = !!target.closest('.thk-bd, .dt, [data-text-hover-kit], [data-decode-text]');
+      if (isTextHeading) {
+        setMode('text');
+        return;
+      }
+
+      // 2. Check if hovering navbar, open case study modal, terminal or overlay
       const isOverNav = !!target.closest('.snav, .snav-sheet, nav, header, [aria-label="Main"]');
       const isOverOverlay = !!target.closest('[data-lenis-prevent], dialog, .terminal-shell, #terminal');
       if (isOverNav || isOverOverlay) {
@@ -111,7 +118,7 @@ export const CrosshairCursor: React.FC = () => {
         return;
       }
 
-      // 2. Check if hovering button or link (takes precedence over card inner)
+      // 3. Check if hovering button or link (takes precedence over card inner)
       const buttonEl = target.closest('a, button, [role="button"], input[type="submit"]') as HTMLElement | null;
       if (buttonEl) {
         const rect = buttonEl.getBoundingClientRect();
@@ -125,15 +132,15 @@ export const CrosshairCursor: React.FC = () => {
         return;
       }
 
-      // 3. Check if hovering project card with data-cursor="open"
+      // 4. Check if hovering project card with data-cursor="open"
       const cardEl = target.closest('[data-cursor="open"]');
       if (cardEl) {
         setMode('open');
         return;
       }
 
-      // 4. Check if hovering text elements
-      const isText = !!target.closest('p, h1, h2, h3, li, blockquote');
+      // 5. Check if hovering text elements
+      const isText = !!target.closest('p, h1, h2, h3, h4, h5, h6, li, blockquote');
       if (isText) {
         setMode('text');
         return;

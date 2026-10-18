@@ -30,7 +30,7 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
           >
             <div className="flex items-center gap-2 mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
-              <CompileLabel text="STAGE 03 /// RUNTIME.TRAJECTORY" />
+              <CompileLabel text="STAGE 03 /// RUNTIME.TRAJECTORY" alt="Jun '22 → now" />
             </div>
             <CompileHeading
               as="h2"
