@@ -204,7 +204,10 @@ export const App: React.FC = () => {
       <CompileScene sections={['hero', 'projects', 'skills', 'experience', 'contact']} />
 
       {/* Slim floating glass bar SiteNav with sliding pill, progress line and mobile drawer */}
-      <SiteNav links={[{ id: 'projects', label: 'Works' }, { id: 'skills', label: 'Arsenal' }, { id: 'experience', label: 'Trajectory' }, { id: 'contact', label: 'Contact' }]} />
+      <SiteNav
+        resumeHref="https://drive.google.com/file/d/1zZPCChlTaYZSdnu78lJLoZvV-AgCJFJJ/view?usp=sharing"
+        links={[{ id: 'projects', label: 'Works' }, { id: 'skills', label: 'Arsenal' }, { id: 'experience', label: 'Trajectory' }, { id: 'contact', label: 'Contact' }]}
+      />
 
       {/* Full-Screen Architectural Deep Dive Case Study Overlay */}
       <ProjectDeepDiveModal projects={data.projects} />

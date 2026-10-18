@@ -123,7 +123,7 @@ export default function SiteNav({
   tagline = 'MERN · Creative Tech',
   initials = 'SM',
   links = DEFAULT_LINKS,
-  resumeHref = '/resume.pdf',
+  resumeHref = 'https://drive.google.com/file/d/1zZPCChlTaYZSdnu78lJLoZvV-AgCJFJJ/view?usp=sharing',
   hireTarget = 'contact',
   email = 'shivam.m28737@gmail.com',
 }: SiteNavProps) {
@@ -243,7 +243,8 @@ export default function SiteNav({
             <DirectionalButton
               as="a"
               href={resumeHref}
-              download
+              target="_blank"
+              rel="noreferrer"
               fillColor="orange"
               className="snav-ghost snav-a"
             >
@@ -298,8 +299,14 @@ export default function SiteNav({
           </a>
         ))}
         <div className="snav-sheet-foot">
-          <a className="snav-ghost snav-a" href={resumeHref} download tabIndex={open ? 0 : -1}>
-            Résumé ↓
+          <a
+            className="snav-ghost snav-a"
+            href={resumeHref}
+            target="_blank"
+            rel="noreferrer"
+            tabIndex={open ? 0 : -1}
+          >
+            Résumé ↗
           </a>
           <a className="snav-ghost snav-a" href={`mailto:${email}`} tabIndex={open ? 0 : -1}>
             Email ↗
