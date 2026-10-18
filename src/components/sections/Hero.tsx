@@ -6,6 +6,7 @@ import { CompileLabel } from '../ui/CompileLabel';
 import { HeroStatCounter } from '../ui/HeroStatCounter';
 import { ArrowUpRight, GitBranch, Terminal } from 'lucide-react';
 import { MagneticButton } from '../ui/MagneticButton';
+import { DirectionalButton } from '../ui/DirectionalButton';
 
 interface HeroProps {
   data: PortfolioData;
@@ -86,27 +87,33 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <MagneticButton>
-                <a
+                <DirectionalButton
+                  as="a"
                   href="#projects"
-                  className="group flex items-center bg-white hover:bg-[#d8dde6] text-[#07070a] font-mono text-[11px] font-bold uppercase tracking-mono transition-all shadow-sm"
+                  fillColor="orange"
+                  className="border border-[#ff5b1f] bg-white text-[#07070a] font-mono text-[11px] font-bold uppercase tracking-mono shadow-sm"
                 >
-                  <span className="px-4 py-2.5">VIEW WORKS</span>
-                  <span className="p-2.5 bg-[#ff5b1f] text-black group-hover:bg-[#ff723f] transition-colors">
+                  <span className="px-4 py-2.5 flex items-center">VIEW WORKS</span>
+                  <span className="p-2.5 bg-[#ff5b1f] text-black flex items-center justify-center">
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </span>
-                </a>
+                </DirectionalButton>
               </MagneticButton>
 
               <MagneticButton>
-                <a
+                <DirectionalButton
+                  as="a"
                   href={data.personal.socials.github}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 px-3.5 py-2.5 border border-[#d8dde6]/20 bg-[#121318] text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono hover:border-[#ff5b1f] hover:text-[#ff5b1f] transition-all"
+                  fillColor="orange"
+                  className="border border-[#d8dde6]/20 bg-[#121318] text-[#d8dde6] font-mono text-[11px] uppercase tracking-mono shadow-sm"
                 >
-                  <GitBranch className="w-3.5 h-3.5 text-[#ff5b1f]" />
-                  <span>GITHUB</span>
-                </a>
+                  <div className="flex items-center gap-2 px-3.5 py-2.5">
+                    <GitBranch className="w-3.5 h-3.5 text-[#ff5b1f]" />
+                    <span>GITHUB</span>
+                  </div>
+                </DirectionalButton>
               </MagneticButton>
             </div>
           </div>

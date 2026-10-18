@@ -99,4 +99,98 @@ body.deep-dive-open .snav {
   transform-origin: bottom center;
 }
 
+/* Blinking Orange Text Caret */
+@keyframes cursorCaretBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-cursor-caret {
+  animation: cursorCaretBlink 0.9s steps(2) infinite;
+}
+
+/* Arrow nudge helper */
+.arrow-nudge {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Desktop Fine Pointers Only: Hide Native Cursor when Custom Cursor is Active */
+@media (hover: hover) and (pointer: fine) {
+  body.has-custom-cursor {
+    cursor: none !important;
+  }
+  body.has-custom-cursor a,
+  body.has-custom-cursor button,
+  body.has-custom-cursor [role="button"],
+  body.has-custom-cursor .cursor-pointer {
+    cursor: none !important;
+  }
+  /* Keep text selection cursor over inputs and textareas */
+  body.has-custom-cursor input,
+  body.has-custom-cursor textarea,
+  body.has-custom-cursor [contenteditable="true"] {
+    cursor: text !important;
+  }
+  /* Restore native cursor over navbar and overlays */
+  body.has-custom-cursor .snav,
+  body.has-custom-cursor .snav * {
+    cursor: default !important;
+  }
+  body.has-custom-cursor .snav a,
+  body.has-custom-cursor .snav button {
+    cursor: pointer !important;
+  }
+  body.has-custom-cursor [data-lenis-prevent],
+  body.has-custom-cursor [data-lenis-prevent] * {
+    cursor: default !important;
+  }
+  body.has-custom-cursor [data-lenis-prevent] button,
+  body.has-custom-cursor [data-lenis-prevent] a {
+    cursor: pointer !important;
+  }
+
+  /* Text links: hover draws underline from left to right, and "↗" nudges 3px up-right */
+  .text-link-draw {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .text-link-draw::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #ff5b1f;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .text-link-draw:hover::after {
+    transform: scaleX(1);
+  }
+  .text-link-draw:hover .arrow-nudge,
+  .group:hover .arrow-nudge {
+    transform: translate(3px, -3px);
+  }
+}
+
+/* Reduced Motion Fallback: Simple Colors, No Sliding or Complex Shapes */
+@media (prefers-reduced-motion: reduce) {
+  .context-cursor-system {
+    display: none !important;
+  }
+  body.has-custom-cursor {
+    cursor: auto !important;
+  }
+  .source-lens-layer,
+  .source-lens-ring {
+    display: none !important;
+  }
+  .directional-button span {
+    transition: none !important;
+  }
+}
+
 

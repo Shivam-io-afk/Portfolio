@@ -5,9 +5,70 @@ import { ArrowUpRight, GitBranch, Layers } from 'lucide-react';
 import type { Project } from '../../data/portfolioData';
 import { CompileHeading } from '../ui/CompileHeading';
 import { CompileLabel } from '../ui/CompileLabel';
+import { DirectionalButton } from '../ui/DirectionalButton';
 import { useCompileStore } from '../../store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const PROJECT_SOURCE_SNIPPETS = [
+  {
+    header: '// ARCHITECTURE // ONBUGGY MULTI-VENDOR ENGINE',
+    items: [
+      { text: 'src/models/Vendor.js · schema({ name, catalog, payoutRate })', hl: 'Vendor.js' },
+      { text: 'src/routes/orders.js · POST /api/orders · multi-vendor segregation', hl: 'POST /api/orders' },
+      { text: 'src/routes/vendors.js · GET /api/vendors/:id/catalog', hl: 'GET /api/vendors' },
+      { text: 'useCart() → persist(localStorage, { key: "onbuggy_cart" })', hl: 'useCart()' },
+      { text: 'src/middleware/jwtAuth.ts · JWT Token Verification & Auth', hl: 'jwtAuth.ts' },
+      { text: 'MongoDB aggregation pipeline · Swiggy-style vendor dispatch', hl: 'MongoDB' },
+      { text: 'RESTful MERN Architecture · Node.js · Express.js · React 18', hl: 'MERN Architecture' },
+    ],
+  },
+  {
+    header: '// ARCHITECTURE // TASKFLOW REALTIME WORKSPACE',
+    items: [
+      { text: 'src/services/firebase.ts · initializeApp(firebaseConfig)', hl: 'firebase.ts' },
+      { text: 'src/context/AuthContext.tsx · onAuthStateChanged(user)', hl: 'AuthContext.tsx' },
+      { text: 'collection("projects") · onSnapshot(tasksQuery, syncStore)', hl: 'onSnapshot' },
+      { text: 'roleBasedAccess(["admin", "member", "observer"])', hl: 'roleBasedAccess' },
+      { text: 'Kanban drag-and-drop state machine · Integrated calendar', hl: 'Kanban' },
+      { text: 'Tailwind UI reactive token system · Warning dispatch bus', hl: 'Tailwind UI' },
+      { text: 'Firebase Auth Protocols · Realtime Firestore · React 18', hl: 'Firebase Auth' },
+    ],
+  },
+  {
+    header: '// ARCHITECTURE // KHATABOOK MVC LEDGER ENGINE',
+    items: [
+      { text: 'src/controllers/ledger.controller.js · recordTransaction()', hl: 'ledger.controller.js' },
+      { text: 'src/models/Transaction.js · Schema({ debit, credit, balance })', hl: 'Transaction.js' },
+      { text: 'POST /api/v1/transactions · GET /api/v1/customers/:id', hl: 'POST /api/v1/transactions' },
+      { text: 'aggregate([ { $match: { customerId } }, { $group: balance } ])', hl: 'aggregate' },
+      { text: 'Express Router · Mongoose ODM · Double-entry audit ledger', hl: 'Mongoose ODM' },
+      { text: 'Server-rendered MVC Architecture · EJS Views · Node.js', hl: 'MVC Architecture' },
+    ],
+  },
+  {
+    header: '// ARCHITECTURE // ZOOM MEET CLONE WEBRTC SIGNALING',
+    items: [
+      { text: 'src/server/signaling.js · io.on("connection", socketHandler)', hl: 'signaling.js' },
+      { text: 'RTCPeerConnection(iceServers) · createOffer() & answer()', hl: 'RTCPeerConnection' },
+      { text: 'iceCandidateHandler → socket.emit("ice-candidate", candidate)', hl: 'iceCandidateHandler' },
+      { text: 'socket.join(roomId) · mesh room coordination & presence', hl: 'socket.join' },
+      { text: 'WebRTC DataChannel · Audio/Video sync stream pipeline', hl: 'WebRTC DataChannel' },
+      { text: 'Express Signaling Server · Socket.io v4 · Node.js runtime', hl: 'Socket.io v4' },
+    ],
+  },
+  {
+    header: '// ARCHITECTURE // SHELTERMAP DISASTER RESCUE MATRIX',
+    items: [
+      { text: 'src/hooks/useDisasterData.ts · open-meteo API cyclone feed', hl: 'useDisasterData.ts' },
+      { text: 'Leaflet map.setView(userCoords, 13) · Custom tile layers', hl: 'map.setView' },
+      { text: 'GeoJSON featureCollection · Evacuation shelter boundaries', hl: 'GeoJSON' },
+      { text: 'Turf.js distance(userPos, shelterPos, { units: "kilometers" })', hl: 'Turf.js' },
+      { text: 'Disaster Shelter Routing · High-risk flood zone polygons', hl: 'Disaster Shelter' },
+      { text: 'React-Leaflet · OpenStreetMap Services · Client Geolocation', hl: 'React-Leaflet' },
+    ],
+  },
+];
 
 interface ProjectsProps {
   projects: Project[];
@@ -22,8 +83,75 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
   const topBorderRefs = useRef<(HTMLDivElement | null)[]>([]);
   const slotReelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const pendingRaf = useRef<{ [key: number]: number }>({});
+  const isFinePointer = useRef(true);
 
   const openDeepDive = useCompileStore((state) => state.openDeepDive);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    isFinePointer.current = !isTouch && !reduced;
+  }, []);
+
+  const handlePointerEnter = (idx: number, e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isFinePointer.current) return;
+    const card = cardInnerRefs.current[idx];
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--lens-x', `${x}px`);
+    card.style.setProperty('--lens-y', `${y}px`);
+
+    gsap.killTweensOf(card);
+    gsap.to(card, {
+      '--lens-r': '110px',
+      '--lens-ring-opacity': 1,
+      duration: 0.25,
+      ease: 'power2.out',
+    });
+
+    window.dispatchEvent(new CustomEvent('tower-focus', { detail: { index: idx } }));
+  };
+
+  const handlePointerMove = (idx: number, e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isFinePointer.current) return;
+    const card = cardInnerRefs.current[idx];
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (!pendingRaf.current[idx]) {
+      pendingRaf.current[idx] = requestAnimationFrame(() => {
+        card.style.setProperty('--lens-x', `${x}px`);
+        card.style.setProperty('--lens-y', `${y}px`);
+        pendingRaf.current[idx] = 0;
+      });
+    }
+  };
+
+  const handlePointerLeave = (idx: number) => {
+    if (!isFinePointer.current) return;
+    const card = cardInnerRefs.current[idx];
+    if (!card) return;
+    if (pendingRaf.current[idx]) {
+      cancelAnimationFrame(pendingRaf.current[idx]);
+      pendingRaf.current[idx] = 0;
+    }
+
+    gsap.killTweensOf(card);
+    gsap.to(card, {
+      '--lens-r': '0px',
+      '--lens-ring-opacity': 0,
+      duration: 0.25,
+      ease: 'power2.in',
+    });
+
+    window.dispatchEvent(new CustomEvent('tower-focus', { detail: { index: -1 } }));
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -267,14 +395,24 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
                   cardInnerRefs.current[idx] = el;
                 }}
                 onClick={() => openDeepDive(project.id)}
+                data-cursor="open"
+                onPointerEnter={(e) => handlePointerEnter(idx, e)}
+                onPointerMove={(e) => handlePointerMove(idx, e)}
+                onPointerLeave={() => handlePointerLeave(idx)}
                 className="relative w-full pointer-events-auto rounded-[18px] bg-[rgba(14,15,20,0.9)] border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-md overflow-hidden p-6 sm:p-8 cursor-pointer group will-change-transform"
+                style={{
+                  '--lens-x': '0px',
+                  '--lens-y': '0px',
+                  '--lens-r': '0px',
+                  '--lens-ring-opacity': 0,
+                } as React.CSSProperties}
               >
                   {/* Growing Thin Orange Top Border (0 -> 100% width on activate) */}
                   <div
                     ref={(el) => {
                       topBorderRefs.current[idx] = el;
                     }}
-                    className="absolute top-0 left-0 right-0 h-[2px] bg-[#ff5b1f] origin-left pointer-events-none"
+                    className="absolute top-0 left-0 right-0 h-[2px] bg-[#ff5b1f] origin-left pointer-events-none z-30"
                     style={{ transform: idx === 0 ? 'scaleX(1)' : 'scaleX(0)', willChange: 'transform' }}
                   />
 
@@ -283,7 +421,50 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
                     ref={(el) => {
                       dimOverlayRefs.current[idx] = el;
                     }}
-                    className="absolute inset-0 rounded-[18px] bg-black pointer-events-none opacity-0 transition-opacity duration-150"
+                    className="absolute inset-0 rounded-[18px] bg-black pointer-events-none opacity-0 transition-opacity duration-150 z-15"
+                  />
+
+                  {/* Hidden Source Lens Layer (revealed only inside cursor circle --lens-r) */}
+                  <div
+                    className="source-lens-layer absolute inset-0 rounded-[18px] bg-[#07080c] p-6 sm:p-8 select-none pointer-events-none z-20 flex flex-col justify-between overflow-hidden"
+                    style={{
+                      clipPath: 'circle(var(--lens-r, 0px) at var(--lens-x, 0px) var(--lens-y, 0px))',
+                      willChange: 'clip-path',
+                    }}
+                  >
+                    <div className="font-mono text-[12px] leading-relaxed text-[#eef0f3]/55 space-y-2">
+                      <div className="text-[10px] uppercase tracking-mono text-[#ff5b1f] font-bold border-b border-[#ff5b1f]/20 pb-1.5 mb-2">
+                        {PROJECT_SOURCE_SNIPPETS[idx]?.header}
+                      </div>
+                      {PROJECT_SOURCE_SNIPPETS[idx]?.items.map((line, lIdx) => (
+                        <div key={lIdx} className="truncate">
+                          {line.text.split(line.hl).map((part, pIdx, arr) => (
+                            <React.Fragment key={pIdx}>
+                              <span>{part}</span>
+                              {pIdx < arr.length - 1 && (
+                                <span className="text-[#ff5b1f] font-semibold">{line.hl}</span>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="font-mono text-[10px] text-[#ff5b1f]/60 tracking-mono pt-2 border-t border-white/5 flex items-center justify-between">
+                      <span>SOURCE_LENS_INSPECTION</span>
+                      <span>TOWER_0{idx} // STAGE 01</span>
+                    </div>
+                  </div>
+
+                  {/* 220px Thin Orange Lens Ring centered on cursor */}
+                  <div
+                    className="source-lens-ring absolute w-[220px] h-[220px] rounded-full border border-[#ff5b1f] shadow-[0_0_16px_rgba(255,91,31,0.4)] pointer-events-none z-30"
+                    style={{
+                      top: 0,
+                      left: 0,
+                      transform: 'translate3d(calc(var(--lens-x, 0px) - 110px), calc(var(--lens-y, 0px) - 110px), 0)',
+                      opacity: 'var(--lens-ring-opacity, 0)',
+                      willChange: 'transform, opacity',
+                    }}
                   />
 
                   {/* Card Content (fades to 0.4 when covered) */}
@@ -374,26 +555,34 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
 
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {project.githubUrl && (
-                          <a
+                          <DirectionalButton
+                            as="a"
                             href={project.githubUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#121318] border border-white/[0.15] hover:border-[#ff5b1f] text-white hover:text-[#ff5b1f] font-mono text-[10px] sm:text-[11px] uppercase tracking-mono transition-all"
+                            fillColor="orange"
+                            className="border border-white/[0.15] bg-[#121318] text-white font-mono text-[10px] sm:text-[11px] uppercase tracking-mono"
                           >
-                            <GitBranch className="w-3 h-3 text-[#ff5b1f]" />
-                            <span>CODE</span>
-                            <ArrowUpRight className="w-3 h-3" />
-                          </a>
+                            <div className="flex items-center gap-1.5 px-3 py-1.5">
+                              <GitBranch className="w-3 h-3 text-[#ff5b1f]" />
+                              <span>CODE</span>
+                              <ArrowUpRight className="w-3 h-3" />
+                            </div>
+                          </DirectionalButton>
                         )}
 
-                        <button
+                        <DirectionalButton
+                          as="button"
                           type="button"
                           onClick={() => openDeepDive(project.id)}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#ff5b1f] text-black font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-mono hover:bg-white transition-all shadow-sm cursor-pointer"
+                          fillColor="orange"
+                          className="border border-[#ff5b1f]/60 bg-[#121318] text-white font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-mono shadow-sm cursor-pointer"
                         >
-                          <span>CASE STUDY</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </button>
+                          <div className="flex items-center gap-1.5 px-3.5 py-1.5">
+                            <span>CASE STUDY</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </div>
+                        </DirectionalButton>
                       </div>
                     </div>
                   </div>

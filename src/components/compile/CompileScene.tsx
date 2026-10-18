@@ -38,6 +38,12 @@ export type CompileSceneProps = {
 const DEFAULT_SECTIONS = ['hero', 'projects', 'skills', 'experience', 'contact'];
 const TOWER_X = [-14, -7, 0, 7, 14];
 const FLOOR_Y = -2;
+const SKILL_CENTERS = [0, 1, 2, 3, 4, 5].map((k) => {
+  const a = (k / 6) * Math.PI * 2;
+  const v = new THREE.Vector3(Math.cos(a) * 3.6, k % 2 ? 0.9 : -0.7, Math.sin(a) * 3.0);
+  if (k === 0) v.multiplyScalar(0.85);
+  return v;
+});
 
 /* ───────────────────────── helpers ───────────────────────── */
 
@@ -355,6 +361,8 @@ const bitsVert = /* glsl */ `
   attribute vec4 aRnd; // x seed, y spin, z scale, w hot
   uniform float uTime, uStage, uVel, uScanY, uScanOn, uWave, uMotion, uSpin;
   uniform vec3 uMouse; uniform float uMouseOn;
+  uniform float uFocusX, uFocusBoost;
+  uniform vec3 uSkillCenter; uniform float uSkillBoost;
   varying vec3 vN; varying vec3 vW; varying float vHot; varying float vFlash;
 
   vec3 pick(float i){ return i < 0.5 ? aP0 : i < 1.5 ? aP1 : i < 2.5 ? aP2 : i < 3.5 ? aP3 : aP4; }
@@ -383,6 +391,19 @@ const bitsVert = /* glsl */ `
     float dl = length(d);
     p += normalize(d + 1e-4) * uMouseOn * w0 * 1.1 * exp(-dl * dl * 0.9);
 
+    // BUILD stage tower focus highlight & slight expansion (stage 1)
+    float distFocus = abs(p.x - uFocusX);
+    float inTower = (1.0 - smoothstep(0.0, 2.8, distFocus)) * uFocusBoost;
+    float stage1Weight = clamp(1.0 - abs(st - 1.0) * 1.4, 0.0, 1.0);
+    float towerBoost = inTower * stage1Weight;
+    p += normalize(vec3(p.x - uFocusX, p.y, p.z) + 1e-4) * (towerBoost * 0.22 * uMotion);
+
+    // NETWORK stage skill cluster focus (stage 2)
+    float stage2Weight = clamp(1.0 - abs(st - 2.0) * 1.4, 0.0, 1.0);
+    float distSkill = length(p - uSkillCenter);
+    float skillBoost = (1.0 - smoothstep(0.0, 2.2, distSkill)) * uSkillBoost * stage2Weight;
+    p += normalize(p - uSkillCenter + 1e-4) * (skillBoost * 0.18 * uMotion);
+
     // the cube itself
     float a = uTime * (0.15 + aRnd.y * 0.5) * uMotion + aRnd.x * 6.2831;
     mat3 R = rotY(a) * rotX(a * 0.7);
@@ -391,7 +412,8 @@ const bitsVert = /* glsl */ `
     lp.y *= 1.0 + min(abs(uVel) * 0.9, 3.0) * uMotion; // scroll-velocity stretch
 
     vec3 wp = p + lp;
-    vHot = aRnd.w * (0.65 + 0.35 * sin(uTime * 2.3 + aRnd.x * 60.0));
+    float baseHot = aRnd.w * (0.65 + 0.35 * sin(uTime * 2.3 + aRnd.x * 60.0));
+    vHot = clamp(baseHot + towerBoost * 2.0 + skillBoost * 2.0, 0.0, 2.5);
 
     // compile scan beam + deploy waves
     vFlash = uScanOn * exp(-pow((wp.y - uScanY) * 2.6, 2.0));
@@ -617,6 +639,10 @@ function World({ ids, count, accent, background, brightness }: { ids: string[]; 
           uSpin: { value: 0 },
           uMouse: { value: new THREE.Vector3(99, 99, 99) },
           uMouseOn: { value: 0 },
+          uFocusX: { value: 999 },
+          uFocusBoost: { value: 0 },
+          uSkillCenter: { value: new THREE.Vector3(999, 999, 999) },
+          uSkillBoost: { value: 0 },
           uAccent: { value: accentC },
           uBg: { value: bgC },
           uBright: { value: brightness },
@@ -707,15 +733,34 @@ function World({ ids, count, accent, background, brightness }: { ids: string[]; 
     const onPulse = () => {
       pulse.current = 1;
     };
+    const onTowerFocus = (e: Event) => {
+      const custom = e as CustomEvent<{ index: number }>;
+      towerFocusIdx.current = custom.detail?.index ?? -1;
+    };
+    const onSkillFocus = (e: Event) => {
+      const custom = e as CustomEvent<{ index: number }>;
+      skillFocusIdx.current = custom.detail?.index ?? -1;
+    };
+
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerdown', onDown, { passive: true });
     window.addEventListener('compile-pulse', onPulse);
+    window.addEventListener('tower-focus', onTowerFocus);
+    window.addEventListener('skill-focus', onSkillFocus);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);
       window.removeEventListener('compile-pulse', onPulse);
+      window.removeEventListener('tower-focus', onTowerFocus);
+      window.removeEventListener('skill-focus', onSkillFocus);
     };
   }, []);
+
+  const towerFocusIdx = useRef(-1);
+  const smoothFocusBoost = useRef(0);
+  const smoothFocusX = useRef(999);
+  const skillFocusIdx = useRef(-1);
+  const smoothSkillBoost = useRef(0);
 
   const pulse = useRef(0);
   const lastStageIdx = useRef(0);
@@ -809,6 +854,18 @@ function World({ ids, count, accent, background, brightness }: { ids: string[]; 
     ray.setFromCamera(new THREE.Vector2(pointer.current.x, pointer.current.y), camera);
     if (ray.ray.intersectPlane(plane, hit)) bitsMat.uniforms.uMouse.value.copy(hit);
 
+    // Tower focus damping over ~0.3s
+    const targetFocusX = towerFocusIdx.current >= 0 && towerFocusIdx.current < TOWER_X.length
+      ? TOWER_X[towerFocusIdx.current]
+      : 999;
+    const targetFocusBoost = towerFocusIdx.current >= 0 ? 1.0 : 0.0;
+    smoothFocusBoost.current = THREE.MathUtils.damp(smoothFocusBoost.current, targetFocusBoost, 8.0, dt);
+    smoothFocusX.current = THREE.MathUtils.damp(smoothFocusX.current, targetFocusX, 10.0, dt);
+
+    // Skill focus damping over ~0.3s
+    const targetSkillBoost = skillFocusIdx.current >= 0 ? 1.0 : 0.0;
+    smoothSkillBoost.current = THREE.MathUtils.damp(smoothSkillBoost.current, targetSkillBoost, 8.0, dt);
+
     const u = bitsMat.uniforms;
     u.uTime.value = time;
     u.uStage.value = s;
@@ -818,6 +875,12 @@ function World({ ids, count, accent, background, brightness }: { ids: string[]; 
     u.uWave.value = w4;
     u.uSpin.value = spin.current;
     u.uMouseOn.value = THREE.MathUtils.damp(u.uMouseOn.value, active && !reduced ? 1 : 0, 3, dt);
+    u.uFocusX.value = smoothFocusX.current;
+    u.uFocusBoost.value = smoothFocusBoost.current;
+    u.uSkillBoost.value = smoothSkillBoost.current;
+    if (skillFocusIdx.current >= 0 && skillFocusIdx.current < SKILL_CENTERS.length) {
+      u.uSkillCenter.value.copy(SKILL_CENTERS[skillFocusIdx.current]);
+    }
 
     coreMat.uniforms.uTime.value = time;
     coreMat.uniforms.uPulse.value = pulse.current;

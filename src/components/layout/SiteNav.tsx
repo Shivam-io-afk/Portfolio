@@ -11,6 +11,7 @@
  * - Self-contained styles (no Tailwind classes), so nothing can silently go missing.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { DirectionalButton } from '../ui/DirectionalButton';
 
 export type NavLink = { id: string; label: string };
 
@@ -239,15 +240,31 @@ export default function SiteNav({
 
           <div className="snav-right">
             <Clock />
-            <a className="snav-ghost snav-a" href={resumeHref} download>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Résumé
-            </a>
-            <button className="snav-hire snav-a" type="button" onClick={(e) => go(hireTarget)(e)}>
-              Hire me <i aria-hidden="true">↗</i>
-            </button>
+            <DirectionalButton
+              as="a"
+              href={resumeHref}
+              download
+              fillColor="orange"
+              className="snav-ghost snav-a"
+            >
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>Résumé</span>
+              </span>
+            </DirectionalButton>
+            <DirectionalButton
+              as="button"
+              type="button"
+              onClick={(e) => go(hireTarget)(e)}
+              fillColor="white"
+              className="snav-hire snav-a"
+            >
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                Hire me <i aria-hidden="true">↗</i>
+              </span>
+            </DirectionalButton>
             <button
               className="snav-menu snav-a"
               type="button"

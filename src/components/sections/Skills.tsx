@@ -91,9 +91,10 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
 
                 {/* Skills List with Hairlines */}
                 <div className="space-y-3 divide-y divide-[#d8dde6]/5">
-                  {category.skills.map((skill) => {
+                  {category.skills.map((skill, sIdx) => {
                     const isHovered = effectiveSkill === skill.name;
                     const repoCount = getReposForSkill(skill.name).length;
+                    const constellationIndex = (idx * 2 + (sIdx % 2)) % 6;
 
                     return (
                       <div
@@ -101,15 +102,31 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
                         onMouseEnter={() => {
                           setLocalSkill(skill.name);
                           setHoveredSkillNode(skill.name);
+                          window.dispatchEvent(
+                            new CustomEvent('skill-focus', {
+                              detail: { index: constellationIndex, name: skill.name },
+                            })
+                          );
                         }}
                         onMouseLeave={() => {
                           setLocalSkill(null);
                           setHoveredSkillNode(null);
+                          window.dispatchEvent(
+                            new CustomEvent('skill-focus', {
+                              detail: { index: -1, name: null },
+                            })
+                          );
                         }}
-                        className={`pt-2.5 flex items-center justify-between font-mono text-xs group cursor-pointer transition-all ${
+                        className={`relative pt-2.5 pb-2 flex items-center justify-between font-mono text-xs group cursor-pointer transition-all ${
                           isHovered ? 'text-[#ff5b1f] pl-1' : 'hover:text-[#ff5b1f]'
                         }`}
                       >
+                        {/* Thin Orange Underline: Draws Left -> Right over 0.3s */}
+                        <span
+                          aria-hidden="true"
+                          className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#ff5b1f] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out pointer-events-none shadow-[0_0_8px_rgba(255,91,31,0.5)]"
+                        />
+
                         <div className="flex items-center gap-2">
                           <span
                             className={`w-1 h-1 rounded-full transition-colors ${
