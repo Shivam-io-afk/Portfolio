@@ -44,7 +44,7 @@ export const SegmentationFault404: React.FC = () => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="segfault-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#07070a]/90 backdrop-blur-xl animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#07070a]/90 animate-fade-in"
     >
       <div className="max-w-xl w-full p-8 border border-red-500/40 bg-[#0d0e14]/95 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
         {/* Header bar */}

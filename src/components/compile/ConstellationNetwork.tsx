@@ -130,7 +130,7 @@ export const ConstellationNetwork: React.FC = () => {
             style={{ pointerEvents: 'auto' }}
           >
             <div
-              className="bg-[#090b0e]/95 border border-[#ff5b1f]/80 p-3.5 rounded-sm shadow-2xl backdrop-blur-md w-72 text-left cursor-pointer transition-all hover:scale-105"
+              className="bg-[#090b0e]/95 border border-[#ff5b1f]/80 p-3.5 rounded-sm shadow-2xl w-72 text-left cursor-pointer transition-all hover:scale-105"
               onClick={() => window.open(activeHoveredRepo.githubUrl, '_blank', 'noopener,noreferrer')}
             >
               <div className="flex items-center justify-between border-b border-[#ff5b1f]/30 pb-1.5 mb-2">

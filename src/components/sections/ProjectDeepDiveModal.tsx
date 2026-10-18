@@ -134,11 +134,11 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
       ref={overlayRef}
       id="project-deep-dive-modal"
       data-lenis-prevent
-      className="fixed inset-0 z-[70] overflow-y-auto bg-[#07070a]/95 backdrop-blur-xl flex flex-col justify-start overscroll-contain"
+      className="fixed inset-0 z-[70] overflow-y-auto bg-[#07070a]/95 flex flex-col justify-start overscroll-contain"
       style={{ zIndex: 70, overscrollBehavior: 'contain' }}
     >
       {/* Top Control Bar */}
-      <div className="sticky top-0 z-20 border-b border-[#d8dde6]/10 bg-[#07070a]/90 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-20 border-b border-[#d8dde6]/10 bg-[#07070a]/90 px-6 py-4 flex items-center justify-between">
         <button
           type="button"
           onClick={handleClose}

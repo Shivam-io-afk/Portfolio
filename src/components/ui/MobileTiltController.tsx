@@ -54,7 +54,7 @@ export const MobileTiltController: React.FC = () => {
     <div className="fixed bottom-6 left-6 z-40 md:hidden animate-fade-in">
       <button
         onClick={requestPermission}
-        className="flex items-center gap-2 px-3 py-1.5 bg-[#121318]/90 border border-[#ff5b1f]/50 text-[#ff5b1f] font-mono text-[10px] tracking-mono uppercase shadow-lg backdrop-blur-md rounded-sm"
+        className="flex items-center gap-2 px-3 py-1.5 bg-[#121318]/90 border border-[#ff5b1f]/50 text-[#ff5b1f] font-mono text-[10px] tracking-mono uppercase shadow-lg rounded-sm"
       >
         <Smartphone className="w-3.5 h-3.5" />
         <span>Enable Motion</span>

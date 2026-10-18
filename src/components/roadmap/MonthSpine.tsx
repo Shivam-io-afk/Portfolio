@@ -179,7 +179,7 @@ export const MonthSpine = forwardRef<MonthSpineHandle, MonthSpineProps>(
         {/* ========================================================
             MOBILE HORIZONTAL STRIP (Visible on mobile < md)
            ======================================================== */}
-        <div className="md:hidden relative w-full h-16 flex items-center justify-center border-b border-[#d8dde6]/10 bg-[#07070a]/90 backdrop-blur-md">
+        <div className="md:hidden relative w-full h-16 flex items-center justify-center border-b border-[#d8dde6]/10 bg-[#07070a]/90">
           <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[1px] bg-[#d8dde6]/15 pointer-events-none" />
 
           <div

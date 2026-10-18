@@ -84,9 +84,38 @@ export const App: React.FC = () => {
       });
     });
 
+    // Track visible headings with IntersectionObserver (never write on <html>/body)
+    const visibleHeadings = new Set<HTMLElement>();
+    let appliedVelSplit = 0;
+
+    const headingObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const el = entry.target as HTMLElement;
+          if (entry.isIntersecting) {
+            visibleHeadings.add(el);
+            if (appliedVelSplit > 0) {
+              el.style.setProperty('--vel-split', `${appliedVelSplit}px`);
+            }
+          } else {
+            visibleHeadings.delete(el);
+            el.style.removeProperty('--vel-split');
+          }
+        });
+      },
+      { rootMargin: '40px 0px', threshold: 0 }
+    );
+
+    const observeHeadings = () => {
+      document.querySelectorAll<HTMLElement>('h1, h2, .rgb-split-target').forEach((el) => {
+        headingObserver.observe(el);
+      });
+    };
+    observeHeadings();
+    document.fonts.ready.then(observeHeadings);
+
     // Drive Lenis via GSAP ticker with lagSmoothing(0)
     let currentVelSplit = 0;
-    let appliedVelSplit = -1;
     const updateTicker = (time: number) => {
       lenis.raf(time * 1000);
       const scrollY = lenis.scroll || window.scrollY || 0;
@@ -98,10 +127,20 @@ export const App: React.FC = () => {
       useCompileStore.getState().setScrollVelocity(vel);
       const targetSplit = Math.min(3.5, Math.abs(vel) * 0.07);
       currentVelSplit += (targetSplit - currentVelSplit) * 0.15;
-      const roundedSplit = currentVelSplit > 0.05 ? Math.round(currentVelSplit * 10) / 10 : 0;
-      if (roundedSplit !== appliedVelSplit) {
-        appliedVelSplit = roundedSplit;
-        document.documentElement.style.setProperty('--vel-split', `${roundedSplit}px`);
+
+      // Quantize to 0.5px steps; when velocity is ~0, set to 0 once and stop writing
+      const isVelNearZero = Math.abs(vel) < 0.05 && currentVelSplit < 0.25;
+      const quantizedSplit = isVelNearZero ? 0 : Math.round(currentVelSplit * 2) / 2;
+
+      if (quantizedSplit !== appliedVelSplit) {
+        appliedVelSplit = quantizedSplit;
+        if (quantizedSplit > 0) {
+          const val = `${quantizedSplit}px`;
+          visibleHeadings.forEach((el) => el.style.setProperty('--vel-split', val));
+        } else {
+          // Zero velocity: clear once, no further writes
+          visibleHeadings.forEach((el) => el.style.removeProperty('--vel-split'));
+        }
       }
     };
     gsap.ticker.add(updateTicker);
@@ -184,6 +223,9 @@ export const App: React.FC = () => {
       lenis.destroy();
       window.removeEventListener('resize', handleResize);
       ScrollTrigger.removeEventListener('refresh', updateDimensions);
+      headingObserver.disconnect();
+      visibleHeadings.forEach((el) => el.style.removeProperty('--vel-split'));
+      document.documentElement.style.removeProperty('--vel-split');
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -227,7 +269,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* Minimal COMPILE Terminal Footer */}
-      <footer className="relative z-10 border-t border-[#d8dde6]/10 py-12 bg-[#07070a]/90 backdrop-blur-md">
+      <footer className="relative z-10 border-t border-[#d8dde6]/10 py-12 bg-[#07070a]/90">
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-6 sm:px-12 gap-6">
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs text-[#ff5b1f]">[ SM ]</span>

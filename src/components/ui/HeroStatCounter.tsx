@@ -12,6 +12,7 @@ interface FlapDigitProps {
   trigger: boolean;
   reducedMotion: boolean;
   staggerMs: number;
+  isActive: boolean;
 }
 
 const FlapDigit: React.FC<FlapDigitProps> = ({
@@ -19,34 +20,51 @@ const FlapDigit: React.FC<FlapDigitProps> = ({
   trigger,
   reducedMotion,
   staggerMs,
+  isActive,
 }) => {
   const [displayDigit, setDisplayDigit] = useState(reducedMotion ? targetDigit : '0');
   const [isFlipping, setIsFlipping] = useState(false);
+  const stepRef = useRef(0);
+  const isCompleteRef = useRef(false);
 
   useEffect(() => {
-    if (reducedMotion || !trigger) return;
+    if (reducedMotion || !trigger || isCompleteRef.current) return;
 
-    const timeout = setTimeout(() => {
-      setIsFlipping(true);
-      const targetNum = parseInt(targetDigit, 10);
-      let step = 0;
-      const totalSteps = 6;
-      const interval = setInterval(() => {
-        step++;
-        if (step >= totalSteps) {
-          clearInterval(interval);
-          setDisplayDigit(targetDigit);
-          setIsFlipping(false);
-        } else {
-          setDisplayDigit(String(Math.floor(Math.random() * 10)));
-        }
-      }, 55);
+    let intervalId: any = 0;
+    let timeoutId: any = 0;
+    const totalSteps = 6;
 
-      return () => clearInterval(interval);
-    }, staggerMs);
+    const tick = () => {
+      if (document.hidden || !isActive) return;
+      stepRef.current++;
+      if (stepRef.current >= totalSteps) {
+        if (intervalId) clearInterval(intervalId);
+        intervalId = 0;
+        isCompleteRef.current = true;
+        setDisplayDigit(targetDigit);
+        setIsFlipping(false);
+      } else {
+        setDisplayDigit(String(Math.floor(Math.random() * 10)));
+      }
+    };
 
-    return () => clearTimeout(timeout);
-  }, [trigger, targetDigit, reducedMotion, staggerMs]);
+    if (isActive) {
+      if (stepRef.current === 0) {
+        timeoutId = setTimeout(() => {
+          setIsFlipping(true);
+          intervalId = setInterval(tick, 55);
+        }, staggerMs);
+      } else if (!isCompleteRef.current) {
+        setIsFlipping(true);
+        intervalId = setInterval(tick, 55);
+      }
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [trigger, targetDigit, reducedMotion, staggerMs, isActive]);
 
   if (reducedMotion) {
     return <span className="text-[#ff5b1f] font-mono font-bold">{targetDigit}</span>;
@@ -91,9 +109,15 @@ export const HeroStatCounter: React.FC<HeroStatCounterProps> = ({ value, label }
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [triggered, setTriggered] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const [isTabVisible, setIsTabVisible] = useState(
+    typeof document !== 'undefined' ? !document.hidden : true
+  );
 
   // Scramble text state for non-digit characters
   const [scrambleChars, setScrambleChars] = useState<string[]>(value.split(''));
+  const scrambleCompleteRef = useRef(false);
+  const scrambleFrameRef = useRef(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -104,28 +128,38 @@ export const HeroStatCounter: React.FC<HeroStatCounterProps> = ({ value, label }
       return;
     }
 
+    const handleVisibility = () => {
+      setIsTabVisible(!document.hidden);
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !triggered) {
+          setIsInView(entry.isIntersecting);
+          if (entry.isIntersecting && !triggered && !document.hidden) {
             setTriggered(true);
-            observer.disconnect();
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.1 }
     );
 
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [triggered]);
+
+  const isActive = triggered && isInView && isTabVisible;
 
   // Handle scramble resolve for text parts (like "MERN", "+ Yrs", " CGPA")
   useEffect(() => {
-    if (!triggered || reducedMotion) return;
+    if (!triggered || reducedMotion || scrambleCompleteRef.current) return;
 
     const chars = value.split('');
     const nonDigitIndices: number[] = [];
@@ -137,19 +171,26 @@ export const HeroStatCounter: React.FC<HeroStatCounterProps> = ({ value, label }
 
     if (nonDigitIndices.length === 0) return;
 
-    // Start with random scrambled characters
-    const currentChars = [...chars];
-    nonDigitIndices.forEach((idx) => {
-      currentChars[idx] = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-    });
-    setScrambleChars([...currentChars]);
+    // Start with random scrambled characters if first frame
+    if (scrambleFrameRef.current === 0) {
+      const currentChars = [...chars];
+      nonDigitIndices.forEach((idx) => {
+        currentChars[idx] = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      });
+      setScrambleChars([...currentChars]);
+    }
 
-    let frame = 0;
+    if (!isActive) return;
+
     const totalFrames = 15;
     const interval = setInterval(() => {
-      frame++;
+      if (document.hidden || !isInView) return;
+
+      scrambleFrameRef.current++;
+      const frame = scrambleFrameRef.current;
       const resolvedCount = Math.floor((frame / totalFrames) * nonDigitIndices.length);
 
+      const currentChars = [...chars];
       nonDigitIndices.forEach((charIdx, i) => {
         if (i < resolvedCount) {
           currentChars[charIdx] = chars[charIdx];
@@ -162,12 +203,13 @@ export const HeroStatCounter: React.FC<HeroStatCounterProps> = ({ value, label }
 
       if (frame >= totalFrames) {
         clearInterval(interval);
+        scrambleCompleteRef.current = true;
         setScrambleChars(chars);
       }
     }, 35);
 
     return () => clearInterval(interval);
-  }, [triggered, value, reducedMotion]);
+  }, [triggered, value, reducedMotion, isActive, isInView]);
 
   let digitCount = 0;
 
@@ -186,6 +228,7 @@ export const HeroStatCounter: React.FC<HeroStatCounterProps> = ({ value, label }
                 trigger={triggered}
                 reducedMotion={reducedMotion}
                 staggerMs={stagger}
+                isActive={isActive}
               />
             );
           }

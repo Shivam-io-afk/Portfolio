@@ -368,7 +368,7 @@ export const AskShivamTerminal: React.FC = () => {
           console.log('AskShivamTerminal: BUTTON CLICKED! previous isOpen =', isOpen);
           setIsOpen((prev) => !prev);
         }}
-        className="flex items-center gap-2.5 px-3.5 py-2 bg-[#090b0e]/95 border border-[#ff5b1f]/50 hover:border-[#ff5b1f] hover:scale-105 active:scale-95 text-white font-mono text-xs shadow-2xl backdrop-blur-md rounded-sm transition-all duration-200 group cursor-pointer"
+        className="flex items-center gap-2.5 px-3.5 py-2 bg-[#090b0e]/95 border border-[#ff5b1f]/50 hover:border-[#ff5b1f] hover:scale-105 active:scale-95 text-white font-mono text-xs shadow-2xl rounded-sm transition-all duration-200 group cursor-pointer"
         title="Open interactive terminal (Press /)"
       >
         <span className="w-2 h-2 rounded-full bg-[#ff5b1f] animate-pulse" />
@@ -385,7 +385,7 @@ export const AskShivamTerminal: React.FC = () => {
       {isOpen && (
         <div
           id="shivam-terminal-window"
-          className="absolute bottom-12 right-0 w-[calc(100vw-2rem)] sm:w-[440px] max-h-[560px] h-[520px] bg-[#07090c]/98 border border-[#ff5b1f]/60 rounded-sm shadow-2xl backdrop-blur-xl z-50 flex flex-col overflow-hidden"
+          className="absolute bottom-12 right-0 w-[calc(100vw-2rem)] sm:w-[440px] max-h-[560px] h-[520px] bg-[#07090c]/98 border border-[#ff5b1f]/60 rounded-sm shadow-2xl z-50 flex flex-col overflow-hidden"
         >
           {/* Terminal Title Bar */}
           <div className="px-4 py-2.5 bg-[#0d1017] border-b border-[#ff5b1f]/30 flex items-center justify-between select-none">

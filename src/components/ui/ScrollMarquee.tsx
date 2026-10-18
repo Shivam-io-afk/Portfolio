@@ -28,9 +28,9 @@ const css = `
 .smq-band{position:absolute;left:-6%;right:-6%;top:50%;display:flex;overflow:hidden;will-change:transform;
   transition:transform 1.1s cubic-bezier(.2,.8,.2,1),clip-path 1.1s cubic-bezier(.2,.8,.2,1);clip-path:inset(0 50% 0 50%)}
 .smq.is-in .smq-band{clip-path:inset(0 0 0 0)}
-.smq-a{z-index:2;transform:translateY(-50%) rotate(0deg);background:rgba(10,11,14,.88);
+.smq-a{z-index:2;transform:translateY(-50%) rotate(0deg);background:rgba(10,11,14,.9);
   border-top:1px solid rgba(255,255,255,.09);border-bottom:1px solid rgba(255,255,255,.09);
-  box-shadow:0 18px 50px rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  box-shadow:0 18px 50px rgba(0,0,0,.45)}
 .smq.is-in .smq-a{transform:translateY(-50%) rotate(-3deg)}
 .smq-b{z-index:1;transform:translateY(-50%) rotate(0deg);background:var(--o);transition-delay:.12s}
 .smq.is-in .smq-b{transform:translateY(-50%) rotate(2.5deg)}

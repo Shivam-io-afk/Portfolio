@@ -399,7 +399,7 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
                 onPointerEnter={(e) => handlePointerEnter(idx, e)}
                 onPointerMove={(e) => handlePointerMove(idx, e)}
                 onPointerLeave={() => handlePointerLeave(idx)}
-                className="relative w-full pointer-events-auto rounded-[18px] bg-[rgba(14,15,20,0.9)] border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-md overflow-hidden p-6 sm:p-8 cursor-pointer group will-change-transform"
+                className="relative w-full pointer-events-auto rounded-[18px] bg-[rgba(14,15,20,0.9)] border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden p-6 sm:p-8 cursor-pointer group will-change-transform"
                 style={{
                   '--lens-x': '0px',
                   '--lens-y': '0px',

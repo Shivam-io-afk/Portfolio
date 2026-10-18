@@ -73,7 +73,7 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
 
         {/* Right Col: Subtext Glass Card + CTAs (Solid background & high z-index to stay clear of 3D sphere) */}
         <div className="lg:col-span-4 flex flex-col justify-end gap-6 relative z-20">
-          <div className="bg-[#0c0d14]/95 border border-[#d8dde6]/15 shadow-[0_16px_48px_rgba(0,0,0,0.85)] p-6 space-y-5 backdrop-blur-md">
+          <div className="bg-[#0c0d14]/95 border border-[#d8dde6]/15 shadow-[0_16px_48px_rgba(0,0,0,0.85)] p-6 space-y-5">
             <div className="flex items-center justify-between border-b border-[#d8dde6]/10 pb-2">
               <span className="font-mono text-[10px] uppercase tracking-mono text-[#ff5b1f]">
                 INIT_MANIFEST.JSON

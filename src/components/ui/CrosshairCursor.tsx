@@ -29,16 +29,26 @@ export const CrosshairCursor: React.FC = () => {
     }
 
     let rafId: number;
-    let bitTimer: number;
+    let bitTimer = 0;
     let currentBitId = 4021;
 
-    // Cycle random 4-digit bit ID every 300ms for hero canvas
-    bitTimer = window.setInterval(() => {
-      currentBitId = Math.floor(1000 + Math.random() * 9000);
-      if (bitLabelRef.current) {
-        bitLabelRef.current.textContent = `BIT #${currentBitId}`;
+    // Cycle random 4-digit bit ID every 300ms ONLY when in hero-bit mode & tab is visible
+    const startBitTimer = () => {
+      if (bitTimer || document.hidden || currentMode.current !== 'hero-bit') return;
+      bitTimer = window.setInterval(() => {
+        currentBitId = Math.floor(1000 + Math.random() * 9000);
+        if (bitLabelRef.current) {
+          bitLabelRef.current.textContent = `BIT #${currentBitId}`;
+        }
+      }, 300);
+    };
+
+    const stopBitTimer = () => {
+      if (bitTimer) {
+        window.clearInterval(bitTimer);
+        bitTimer = 0;
       }
-    }, 300);
+    };
 
     const setMode = (newMode: CursorMode) => {
       if (currentMode.current === newMode) return;
@@ -69,7 +79,13 @@ export const CrosshairCursor: React.FC = () => {
       openRef.current.style.transform = newMode === 'open' ? 'scale(1)' : 'scale(0.4)';
 
       // 4. Hero Bit Label
-      bitLabelRef.current.style.opacity = newMode === 'hero-bit' ? '1' : '0';
+      const isHeroBit = newMode === 'hero-bit';
+      bitLabelRef.current.style.opacity = isHeroBit ? '1' : '0';
+      if (isHeroBit) {
+        startBitTimer();
+      } else {
+        stopBitTimer();
+      }
 
       // 5. Button corner brackets frame
       frameRef.current.style.opacity = newMode === 'frame' ? '1' : '0';
@@ -136,6 +152,7 @@ export const CrosshairCursor: React.FC = () => {
 
     const handleMouseLeave = () => {
       isVisible.current = false;
+      stopBitTimer();
       document.body.classList.remove('has-custom-cursor');
       if (containerRef.current) {
         containerRef.current.style.opacity = '0';
@@ -147,6 +164,17 @@ export const CrosshairCursor: React.FC = () => {
       document.body.classList.add('has-custom-cursor');
       if (containerRef.current) {
         containerRef.current.style.opacity = '1';
+      }
+      if (currentMode.current === 'hero-bit' && !document.hidden) {
+        startBitTimer();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopBitTimer();
+      } else if (currentMode.current === 'hero-bit') {
+        startBitTimer();
       }
     };
 
@@ -182,6 +210,7 @@ export const CrosshairCursor: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     rafId = requestAnimationFrame(loop);
 
     return () => {
@@ -189,7 +218,8 @@ export const CrosshairCursor: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
-      window.clearInterval(bitTimer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      stopBitTimer();
       cancelAnimationFrame(rafId);
       document.body.classList.remove('has-custom-cursor');
     };
@@ -237,7 +267,7 @@ export const CrosshairCursor: React.FC = () => {
         {/* State D: Hero Bit Readout Label (underneath circle) */}
         <div
           ref={bitLabelRef}
-          className="absolute top-[16px] -left-[28px] px-1.5 py-0.5 rounded-[2px] bg-[#07070a]/90 border border-white/15 font-mono text-[9px] text-[#ff5b1f] tracking-mono whitespace-nowrap backdrop-blur-sm pointer-events-none opacity-0 transition-opacity duration-150 shadow-sm"
+          className="absolute top-[16px] -left-[28px] px-1.5 py-0.5 rounded-[2px] bg-[#07070a]/90 border border-white/15 font-mono text-[9px] text-[#ff5b1f] tracking-mono whitespace-nowrap pointer-events-none opacity-0 transition-opacity duration-150 shadow-sm"
         >
           BIT #4021
         </div>

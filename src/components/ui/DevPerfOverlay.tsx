@@ -30,7 +30,7 @@ export const DevPerfOverlay: React.FC = () => {
     <aside
       id="perf-hud-overlay"
       aria-label="Development Performance Overlay"
-      className="fixed bottom-3 left-3 z-50 font-mono text-[11px] bg-[#07070a]/90 border border-[#d8dde6]/20 p-3 shadow-xl backdrop-blur-md pointer-events-auto select-none rounded-sm"
+      className="fixed bottom-3 left-3 z-50 font-mono text-[11px] bg-[#07070a]/90 border border-[#d8dde6]/20 p-3 shadow-xl pointer-events-auto select-none rounded-sm"
     >
       <div className="flex items-center justify-between gap-4 pb-2 border-b border-[#d8dde6]/10 mb-2">
         <span className="text-[#ff5b1f] font-bold">PERF_HUD [DEBUG]</span>

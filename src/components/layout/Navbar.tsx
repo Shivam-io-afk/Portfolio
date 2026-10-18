@@ -45,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* 1. Left: Monogram [ SM ] */}
         <a
           href="#hero"
-          className="pointer-events-auto group px-3 py-1.5 flex items-center gap-2 bg-[#121318]/90 backdrop-blur-md border border-[#d8dde6]/10 hover:border-[#ff5b1f]/60 transition-all"
+          className="pointer-events-auto group px-3 py-1.5 flex items-center gap-2 bg-[#121318]/90 border border-[#d8dde6]/10 hover:border-[#ff5b1f]/60 transition-all"
         >
           <span className="font-mono text-xs text-[#ff5b1f]">[</span>
           <span className="font-mono text-xs font-bold tracking-widest text-[#d8dde6] group-hover:text-white transition-colors">
@@ -59,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </a>
 
         {/* 2. Center: Nav ticks + 5-step Progress Rail + Build Status Pill */}
-        <nav className="pointer-events-auto hidden md:flex items-center gap-5 px-5 py-2 bg-[#121318]/90 backdrop-blur-md border border-[#d8dde6]/10">
+        <nav className="pointer-events-auto hidden md:flex items-center gap-5 px-5 py-2 bg-[#121318]/90 border border-[#d8dde6]/10">
           <a
             href="#projects"
             className={`flex items-center gap-1.5 font-mono text-[11px] tracking-mono uppercase transition-colors ${
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* 3. Right: Live IST Clock + Resume Bundler + HIRE ME Button */}
         <div className="pointer-events-auto flex items-center gap-3">
           {/* Live Clock with Local-time theme period */}
-          <div className="hidden lg:flex flex-col items-end px-3 py-1 bg-[#121318]/90 backdrop-blur-md border border-[#d8dde6]/10">
+          <div className="hidden lg:flex flex-col items-end px-3 py-1 bg-[#121318]/90 border border-[#d8dde6]/10">
             <div className="flex items-center gap-1.5">
               <span
                 className="w-1.5 h-1.5 rounded-full"
@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden bg-[#07070a]/95 backdrop-blur-2xl flex flex-col justify-between p-8 pt-24">
+        <div className="fixed inset-0 z-50 md:hidden bg-[#07070a]/95 flex flex-col justify-between p-8 pt-24">
           <div className="flex flex-col gap-6">
             <div className="font-mono text-xs uppercase tracking-mono text-[#ff5b1f]">
               Navigation // Compilation Pipeline

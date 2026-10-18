@@ -183,7 +183,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
         className="w-full h-screen overflow-hidden relative flex flex-col justify-between pt-20 sm:pt-24 z-20"
       >
         {/* Subtle Top Header bar inside pinned view */}
-        <div className="w-full px-6 sm:px-12 py-3 flex items-center justify-between border-b border-[#d8dde6]/10 z-20 bg-[#07070a]/90 backdrop-blur-md shrink-0">
+        <div className="w-full px-6 sm:px-12 py-3 flex items-center justify-between border-b border-[#d8dde6]/10 z-20 bg-[#07070a]/90 shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#ff5b1f] animate-ping shrink-0" />
@@ -317,7 +317,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
         </div>
 
         {/* Bottom Status bar inside pinned container */}
-        <div className="w-full px-6 sm:px-12 py-3 flex items-center justify-between border-t border-[#d8dde6]/10 bg-[#07070a]/90 backdrop-blur-sm z-20 shrink-0">
+        <div className="w-full px-6 sm:px-12 py-3 flex items-center justify-between border-t border-[#d8dde6]/10 bg-[#07070a]/90 z-20 shrink-0">
           <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/50">
             <span>SCROLL TO ASCEND</span>
             <span className="text-[#ff5b1f]">&darr;</span>
@@ -344,7 +344,7 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
           VERIFIED CREDENTIALS MODAL DRAWER
          ======================================================== */}
       {showCredsModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90">
           <div className="relative w-full max-w-lg bg-[#0c0d14] border border-[#ff5b1f]/40 p-6 sm:p-8 shadow-[0_0_40px_rgba(255,91,31,0.25)]">
             {/* Close Button */}
             <button
