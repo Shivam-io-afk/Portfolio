@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -22,6 +22,7 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
   const [isOpen, setIsOpen] = useState(useCompileStore.getState().isDeepDiveOpen);
   const [activeId, setActiveId] = useState(useCompileStore.getState().activeDeepDiveId);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   // Subscribe only to open/close and active project changes
   useEffect(() => {
@@ -31,11 +32,76 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
     });
   }, []);
 
+  // 1. Manage modal scroll lock, Lenis pause/resume, SiteNav visibility, and history back in ONE useEffect
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Call window.lenis.stop()
+    const lenis = (window as any).lenis || (window as any).__lenis;
+    if (lenis && typeof lenis.stop === 'function') {
+      lenis.stop();
+    }
+
+    // Add overflow:hidden to <html> and <body>
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    // Hide SiteNav (opacity 0 + pointer-events none, 0.3s fade)
+    document.body.classList.add('deep-dive-open');
+    const nav = document.querySelector('.snav') as HTMLElement | null;
+    if (nav) {
+      nav.style.opacity = '0';
+      nav.style.pointerEvents = 'none';
+      nav.style.transition = 'opacity 0.3s ease';
+    }
+
+    // Push history state so browser back button closes the case study
+    window.history.pushState({ modalOpen: true }, '');
+
+    const handlePopState = () => {
+      useCompileStore.getState().closeDeepDive();
+    };
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+
+      // Restore SiteNav visibility
+      document.body.classList.remove('deep-dive-open');
+      if (nav) {
+        nav.style.opacity = '';
+        nav.style.pointerEvents = '';
+      }
+
+      // Remove overflow:hidden from <html> and <body>
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+
+      // Call window.lenis.start()
+      if (lenis && typeof lenis.start === 'function') {
+        lenis.start();
+      }
+    };
+  }, [isOpen]);
+
+  // 2. Reset overlay scrollTop to 0 every time a case study opens
+  useLayoutEffect(() => {
+    if (isOpen && overlayRef.current) {
+      overlayRef.current.scrollTop = 0;
+    }
+  }, [isOpen, activeId]);
+
   // Keyboard Esc handling
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && useCompileStore.getState().isDeepDiveOpen) {
-        useCompileStore.getState().closeDeepDive();
+        if (window.history.state?.modalOpen) {
+          window.history.back();
+        } else {
+          useCompileStore.getState().closeDeepDive();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -48,7 +114,11 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
     projects.find((p) => p.id === activeId) || projects[0];
 
   const handleClose = () => {
-    useCompileStore.getState().closeDeepDive();
+    if (window.history.state?.modalOpen) {
+      window.history.back();
+    } else {
+      useCompileStore.getState().closeDeepDive();
+    }
   };
 
   const mockScreenshots = [
@@ -59,8 +129,11 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
 
   return (
     <div
+      ref={overlayRef}
       id="project-deep-dive-modal"
-      className="fixed inset-0 z-50 overflow-y-auto bg-[#07070a]/95 backdrop-blur-xl flex flex-col justify-start"
+      data-lenis-prevent
+      className="fixed inset-0 z-[70] overflow-y-auto bg-[#07070a]/95 backdrop-blur-xl flex flex-col justify-start overscroll-contain"
+      style={{ zIndex: 70, overscrollBehavior: 'contain' }}
     >
       {/* Top Control Bar */}
       <div className="sticky top-0 z-20 border-b border-[#d8dde6]/10 bg-[#07070a]/90 backdrop-blur-md px-6 py-4 flex items-center justify-between">
