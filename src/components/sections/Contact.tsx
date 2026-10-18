@@ -5,6 +5,7 @@ import type { PortfolioData } from '../../data/portfolioData';
 import { ScatterText } from '../ui/ScatterText';
 import { MagneticButton } from '../ui/MagneticButton';
 import { ResumeBundlerButton } from '../ui/ResumeBundlerButton';
+import ScrollMarquee from '../ui/ScrollMarquee';
 import { useCompileStore } from '../../store/useCompileStore';
 
 interface ContactProps {
@@ -30,23 +31,11 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
 
   return (
     <section id="contact" className="relative pt-24 pb-28 overflow-hidden z-10">
-      {/* Huge Marquee Banner between hairlines */}
-      <div className="w-full border-y border-[#d8dde6]/10 py-6 mb-20 overflow-hidden bg-[#121318]/50">
-        <div className="flex whitespace-nowrap animate-marquee items-center">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center">
-              <span className="font-grotesk font-bold text-4xl sm:text-6xl text-white uppercase tracking-tight px-6">
-                DEPLOY TO PRODUCTION.
-              </span>
-              <span className="text-[#ff5b1f] text-2xl sm:text-4xl px-4">✦</span>
-              <span className="font-serif italic text-4xl sm:text-6xl text-[#ff5b1f] px-6">
-                Let&apos;s Build Together.
-              </span>
-              <span className="text-[#ff5b1f] text-2xl sm:text-4xl px-4">✦</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Crossing, scroll-reactive marquee bands */}
+      <ScrollMarquee
+        front={['Deploy to production.', "Let's build together."]}
+        back={['Open to work', 'Full-stack', 'Freelance', 'MERN', 'Rewa · India']}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-10 relative">
         {/* Eyebrow & Intro */}
