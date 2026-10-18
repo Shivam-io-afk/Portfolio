@@ -9,6 +9,15 @@
   --chrome: #d8dde6;
   --signal: #ff5b1f;
   --ok: #4ade80;
+  --sticky-base: 76px;
+  --sticky-gap: 10px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --sticky-base: 96px;
+    --sticky-gap: 18px;
+  }
 }
 
 /* Custom Minimal Scrollbar */

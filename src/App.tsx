@@ -190,7 +190,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#07070a] text-[#d8dde6] overflow-x-hidden selection:bg-[#ff5b1f] selection:text-black font-grotesk antialiased">
+    <div className="relative min-h-screen bg-[#07070a] text-[#d8dde6] overflow-x-clip selection:bg-[#ff5b1f] selection:text-black font-grotesk antialiased">
       {/* Dev Performance HUD Overlay (Only rendered if ?debug is in URL) */}
       <DevPerfOverlay />
 
