@@ -7,6 +7,7 @@ export const CrosshairCursor: React.FC = () => {
 
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isPointerOverInteractive, setIsPointerOverInteractive] = useState<boolean>(false);
+  const [isOverNavbar, setIsOverNavbar] = useState<boolean>(false);
   const [bitId, setBitId] = useState<number>(4021);
   const [isDisabled, setIsDisabled] = useState<boolean>(true);
 
@@ -34,6 +35,10 @@ export const CrosshairCursor: React.FC = () => {
       const target = e.target as HTMLElement | null;
       const isInteractive = !!target?.closest('a, button, input, textarea, select, [role="button"]');
       setIsPointerOverInteractive(isInteractive);
+
+      // Check if cursor is over the navbar or mobile sheet
+      const overNav = !!target?.closest('.snav, .snav-sheet, nav, header, [aria-label="Main"]');
+      setIsOverNavbar(overNav);
 
       // Compute pseudo-random bit id from screen coordinates
       const calculatedBit = (Math.abs(Math.floor(e.clientX * 7.1 + e.clientY * 13.3)) % 12000) + 1;
@@ -114,7 +119,7 @@ export const CrosshairCursor: React.FC = () => {
       </div>
 
       {/* 3. Tiny Live Bit Readout */}
-      {!isPointerOverInteractive && (
+      {!isPointerOverInteractive && !isOverNavbar && (
         <div
           ref={labelRef}
           className="fixed top-0 left-0 pointer-events-none px-1.5 py-0.5 rounded-[2px] bg-[#07070a]/85 border border-[#d8dde6]/15 font-mono text-[9px] text-[#ff5b1f] tracking-mono whitespace-nowrap backdrop-blur-sm"

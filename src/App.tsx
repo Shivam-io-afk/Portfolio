@@ -3,8 +3,8 @@ import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { portfolioData } from './data/portfolioData';
-import { CompileCanvas } from './components/compile/CompileCanvas';
-import { Navbar } from './components/layout/Navbar';
+import CompileScene from './components/compile/CompileScene';
+import SiteNav from './components/layout/SiteNav';
 import { Hero } from './components/sections/Hero';
 import { Projects } from './components/sections/Projects';
 import { Skills } from './components/sections/Skills';
@@ -36,6 +36,7 @@ export const App: React.FC = () => {
       autoRaf: false,
       smoothWheel: true,
     });
+    (window as any).lenis = lenis;
     (window as any).__lenis = lenis;
 
     // Strictly nothing else runs inside lenis.on('scroll')
@@ -199,11 +200,11 @@ export const App: React.FC = () => {
       {/* Giant 25vw Outlined Stage Background Words (SOURCE / BUILD / NETWORK / RUNTIME / DEPLOY) */}
       <StageBackgroundWord />
 
-      {/* Fixed Full-Screen Three.js Canvas with Tier-Adaptive Bits Instanced Mesh */}
-      <CompileCanvas />
+      {/* Tested continuous 3D background with GPU morphing bits across 5 stages */}
+      <CompileScene sections={['hero', 'projects', 'skills', 'experience', 'contact']} />
 
-      {/* Header / HUD Navigation with Monogram [ SM ], Build Passing Pill, IST Clock */}
-      <Navbar availability={data.personal.availability} />
+      {/* Slim floating glass bar SiteNav with sliding pill, progress line and mobile drawer */}
+      <SiteNav links={[{ id: 'projects', label: 'Works' }, { id: 'skills', label: 'Arsenal' }, { id: 'experience', label: 'Trajectory' }, { id: 'contact', label: 'Contact' }]} />
 
       {/* Full-Screen Architectural Deep Dive Case Study Overlay */}
       <ProjectDeepDiveModal projects={data.projects} />

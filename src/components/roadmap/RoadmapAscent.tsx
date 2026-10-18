@@ -161,12 +161,12 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
     <section
       id="experience"
       ref={containerRef}
-      className="relative w-full z-10 bg-[#07070a]"
+      className="relative w-full z-10"
     >
       {/* Pinned Fullscreen Viewport Layer */}
       <div
         ref={pinRef}
-        className="w-full h-screen overflow-hidden relative flex flex-col justify-between bg-[#07070a] pt-20 sm:pt-24 z-20"
+        className="w-full h-screen overflow-hidden relative flex flex-col justify-between pt-20 sm:pt-24 z-20"
       >
         {/* Subtle Top Header bar inside pinned view */}
         <div className="w-full px-6 sm:px-12 py-3 flex items-center justify-between border-b border-[#d8dde6]/10 z-20 bg-[#07070a]/90 backdrop-blur-md shrink-0">
