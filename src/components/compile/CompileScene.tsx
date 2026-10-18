@@ -747,14 +747,22 @@ function World({ ids, count, accent, background, brightness }: { ids: string[]; 
     window.addEventListener('compile-pulse', onPulse);
     window.addEventListener('tower-focus', onTowerFocus);
     window.addEventListener('skill-focus', onSkillFocus);
+    window.addEventListener('deploy-burst', onDeployBurst);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);
       window.removeEventListener('compile-pulse', onPulse);
       window.removeEventListener('tower-focus', onTowerFocus);
       window.removeEventListener('skill-focus', onSkillFocus);
+      window.removeEventListener('deploy-burst', onDeployBurst);
     };
   }, []);
+
+  const deployBurstStart = useRef(-99);
+  const onDeployBurst = () => {
+    pulse.current = 1.5;
+    deployBurstStart.current = performance.now();
+  };
 
   const towerFocusIdx = useRef(-1);
   const smoothFocusBoost = useRef(0);
@@ -872,7 +880,9 @@ function World({ ids, count, accent, background, brightness }: { ids: string[]; 
     u.uVel.value = reduced ? 0 : smoothVel.current;
     u.uScanY.value = 7 - st * 14;
     u.uScanOn.value = scanOn;
-    u.uWave.value = w4;
+    const deployAge = (performance.now() - deployBurstStart.current) / 1000;
+    const waveBurst = deployAge >= 0 && deployAge < 1.5 ? Math.sin((deployAge / 1.5) * Math.PI) * 2.0 : 0;
+    u.uWave.value = Math.max(w4, waveBurst);
     u.uSpin.value = spin.current;
     u.uMouseOn.value = THREE.MathUtils.damp(u.uMouseOn.value, active && !reduced ? 1 : 0, 3, dt);
     u.uFocusX.value = smoothFocusX.current;

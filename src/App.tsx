@@ -19,6 +19,7 @@ import { CrosshairCursor } from './components/ui/CrosshairCursor';
 import { GitLogFooter } from './components/ui/GitLogFooter';
 import { SegmentationFault404 } from './components/ui/SegmentationFault404';
 import { MobileTiltController } from './components/ui/MobileTiltController';
+import { GiantFooterWordmark } from './components/ui/GiantFooterWordmark';
 import { useCompileStore, StageId } from './store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -269,7 +270,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* Minimal COMPILE Terminal Footer */}
-      <footer className="relative z-10 border-t border-[#d8dde6]/10 py-12 bg-[#07070a]/90">
+      <footer className="relative z-10 border-t border-[#d8dde6]/10 pt-12 pb-0 bg-[#07070a]/90 overflow-hidden">
         <div className="flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-6 sm:px-12 gap-6">
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs text-[#ff5b1f]">[ SM ]</span>
@@ -286,6 +287,9 @@ export const App: React.FC = () => {
 
         {/* Real GitHub Git Log cached 1hr */}
         <GitLogFooter />
+
+        {/* Giant Footer Wordmark */}
+        <GiantFooterWordmark />
       </footer>
 
       {/* Interactive Scripted 'Ask Shivam' Terminal Shell (Press /) */}

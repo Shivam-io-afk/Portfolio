@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { SkillCategory } from '../../data/portfolioData';
 import { CompileHeading } from '../ui/CompileHeading';
 import { CompileLabel } from '../ui/CompileLabel';
@@ -25,6 +27,53 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
   const matchingRepoIndices = useMemo(() => {
     return effectiveSkill ? getReposForSkill(effectiveSkill) : [];
   }, [effectiveSkill]);
+
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || window.innerWidth < 768) return;
+
+    const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (cards.length < 3) return;
+
+    // Set initial overlapping parting state
+    gsap.set(cards[0], { xPercent: 70, rotateY: -6, scale: 0.94, transformOrigin: 'right center', zIndex: 1 });
+    gsap.set(cards[1], { scale: 0.94, transformOrigin: 'center center', zIndex: 2 });
+    gsap.set(cards[2], { xPercent: -70, rotateY: 6, scale: 0.94, transformOrigin: 'left center', zIndex: 1 });
+
+    const trigger = ScrollTrigger.create({
+      trigger: '#skills',
+      start: 'top 80%',
+      end: 'top 20%',
+      scrub: true,
+      onUpdate: (self) => {
+        const p = self.progress;
+        // Slide apart to columns with Y-rotation ±6° -> 0
+        gsap.set(cards[0], {
+          xPercent: (1 - p) * 70,
+          rotateY: (1 - p) * -6,
+          scale: 0.94 + p * 0.06,
+        });
+        gsap.set(cards[1], {
+          scale: 0.94 + p * 0.06,
+        });
+        gsap.set(cards[2], {
+          xPercent: (1 - p) * -70,
+          rotateY: (1 - p) * 6,
+          scale: 0.94 + p * 0.06,
+        });
+      },
+    });
+
+    return () => {
+      trigger.kill();
+      cards.forEach((card) => {
+        gsap.set(card, { clearProps: 'all' });
+      });
+    };
+  }, []);
 
   return (
     <section id="skills" className="relative py-28 px-4 sm:px-10 max-w-7xl mx-auto z-10">
@@ -59,19 +108,18 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
         </div>
       </motion.div>
 
-      {/* Solid Compile Cards without heavy backdrop blur */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+      {/* Solid Compile Cards without heavy backdrop blur with parting reveal on scroll */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 xl:gap-14 [perspective:1200px]">
         {categories.map((category, idx) => {
           const indexFormatted = String(idx + 1).padStart(2, '0');
 
           return (
-            <motion.div
+            <div
               key={category.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="compile-card p-6 sm:p-7 border-t-2 border-t-[#ff5b1f] flex flex-col justify-between"
+              ref={(el) => {
+                cardRefs.current[idx] = el;
+              }}
+              className="compile-card p-6 sm:p-7 border-t-2 border-t-[#ff5b1f] flex flex-col justify-between will-change-transform relative"
             >
               <div>
                 {/* Index + Title */}
@@ -162,7 +210,7 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
                 <span>GRAPH NODE</span>
                 <span className="text-[#4ade80]">READY</span>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

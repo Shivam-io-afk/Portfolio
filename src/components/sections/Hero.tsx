@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { PortfolioData } from '../../data/portfolioData';
 import { CompileHeading } from '../ui/CompileHeading';
 import { CompileLabel } from '../ui/CompileLabel';
@@ -13,6 +15,139 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ data }) => {
+  const shatterCleanupRef = useRef<(() => void) | null>(null);
+
+  const setupHeroShatter = () => {
+    if (typeof window === 'undefined') return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+
+    requestAnimationFrame(() => {
+      if (shatterCleanupRef.current) {
+        shatterCleanupRef.current();
+        shatterCleanupRef.current = null;
+      }
+
+      const headingEl = document.querySelector('#hero h1');
+      if (!headingEl) return;
+
+      // Get all per-letter character spans from ghost/live layer
+      const letterEls = Array.from(headingEl.querySelectorAll<HTMLSpanElement>('[data-gchar]'))
+        .filter((el) => el.textContent && el.textContent.trim() !== '');
+
+      if (letterEls.length === 0) return;
+
+      letterEls.forEach((el) => {
+        el.style.display = 'inline-block';
+        el.style.willChange = 'transform, opacity';
+      });
+
+    // "SHIVAM" has 6 chars (0..5), "Mishra." has 7 chars (6..12)
+    const shivamLetters = letterEls.slice(0, 6);
+    const mishraLetters = letterEls.slice(6);
+
+    const getDistanceFromEdge = (arr: HTMLSpanElement[]) => {
+      const len = arr.length;
+      return arr.map((el, idx) => {
+        const distFromCenter = Math.abs(idx - (len - 1) / 2);
+        return { el, distFromCenter };
+      });
+    };
+
+    // Stagger from outer letters inward (outer letters have higher distFromCenter)
+    const allWeighted = [
+      ...getDistanceFromEdge(shivamLetters),
+      ...getDistanceFromEdge(mishraLetters),
+    ].sort((a, b) => b.distFromCenter - a.distFromCenter);
+
+    const tl = gsap.timeline({ paused: true });
+
+    // Target 3D core position on screen (~65% x, 48% y on desktop, 50% x on mobile)
+    const targetCoreX = window.innerWidth * (window.innerWidth < 1024 ? 0.5 : 0.65);
+    const targetCoreY = window.innerHeight * 0.48;
+
+    allWeighted.forEach(({ el }, rank) => {
+      const rect = el.getBoundingClientRect();
+      const currentX = rect.left + rect.width / 2;
+      const currentY = rect.top + rect.height / 2;
+      const dx = targetCoreX - currentX;
+      const dy = targetCoreY - currentY;
+
+      // Random curved path (x/y offset ±80px mid-way)
+      const midOffsetX = (Math.random() - 0.5) * 160;
+      const midOffsetY = (Math.random() - 0.5) * 160;
+      const midX = dx * 0.5 + midOffsetX;
+      const midY = dy * 0.5 + midOffsetY;
+
+      // Rotate ±90°
+      const rot = (Math.random() > 0.5 ? 1 : -1) * (75 + Math.random() * 30);
+
+      tl.to(
+        el,
+        {
+          keyframes: [
+            {
+              x: midX,
+              y: midY,
+              rotation: rot * 0.4,
+              scale: 0.65,
+              opacity: 0.85,
+              duration: 0.5,
+              ease: 'power1.in',
+            },
+            {
+              x: dx,
+              y: dy,
+              rotation: rot,
+              scale: 0.1,
+              opacity: 0,
+              duration: 0.5,
+              ease: 'power2.in',
+            },
+          ],
+          duration: 1,
+        },
+        rank * 0.02
+      );
+    });
+
+    let hasPulsed = false;
+    const trigger = ScrollTrigger.create({
+      trigger: '#hero',
+      start: 'top top',
+      end: '+=60%',
+      scrub: 0.6,
+      animation: tl,
+      onUpdate: (self) => {
+        if (self.progress >= 0.8 && !hasPulsed && self.direction > 0) {
+          hasPulsed = true;
+          try {
+            window.dispatchEvent(new CustomEvent('compile-pulse'));
+          } catch {}
+        } else if (self.progress < 0.7 && hasPulsed) {
+          hasPulsed = false;
+        }
+      },
+    });
+
+    shatterCleanupRef.current = () => {
+      trigger.kill();
+      tl.kill();
+      letterEls.forEach((el) => {
+        gsap.set(el, { clearProps: 'all' });
+      });
+    };
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      if (shatterCleanupRef.current) {
+        shatterCleanupRef.current();
+      }
+    };
+  }, []);
+
   return (
     <section
       id="hero"
@@ -35,8 +170,8 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
 
       {/* Main Hero Body: Headline with Space Grotesk caps + Instrument Serif italic accents */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end my-auto py-8 sm:py-16">
-        {/* Left Col: Giant Name & Title (max-w 42% / <= 420px to prevent sphere overlap) */}
-        <div className="lg:col-span-5 w-full max-w-[420px] lg:max-w-[42%] space-y-6">
+        {/* Left Col: Giant Name & Title (widened to max-w 520px so paragraph doesn't break awkwardly) */}
+        <div className="lg:col-span-6 w-full max-w-[520px] space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#121318]/90 border border-[#ff5b1f]/30 font-mono text-[10px] uppercase tracking-wide text-[#ff5b1f]">
             <span>// ARCHITECTURE ENTRY POINT</span>
           </div>
@@ -48,6 +183,7 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
             accentOnNewLine
             delay={0.3}
             speed={0.75}
+            onCompiled={setupHeroShatter}
             className="text-[clamp(2.6rem,5.5vw,5.6rem)] leading-[0.94] tracking-tight font-grotesk text-white font-bold block"
           />
 
@@ -69,7 +205,7 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
         </div>
 
         {/* Center Space for 3D Fibonacci Sphere */}
-        <div className="hidden lg:block lg:col-span-3 pointer-events-none" aria-hidden="true" />
+        <div className="hidden lg:block lg:col-span-2 pointer-events-none" aria-hidden="true" />
 
         {/* Right Col: Subtext Glass Card + CTAs (Solid background & high z-index to stay clear of 3D sphere) */}
         <div className="lg:col-span-4 flex flex-col justify-end gap-6 relative z-20">

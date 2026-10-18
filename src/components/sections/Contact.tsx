@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Copy, Check, ArrowRight, ArrowUpRight, GitBranch } from 'lucide-react';
 import type { PortfolioData } from '../../data/portfolioData';
 import { CompileHeading } from '../ui/CompileHeading';
@@ -17,7 +19,20 @@ interface ContactProps {
 export const Contact: React.FC<ContactProps> = ({ personal }) => {
   const [emailHovered, setEmailHovered] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'sent'>('idle');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [deployState, setDeployState] = useState<'idle' | 'deploying' | 'delivered'>('idle');
+  const submitBtnRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        ScrollTrigger.refresh();
+      } catch {}
+    }, 450);
+    return () => clearTimeout(t);
+  }, [deployState]);
 
   const copyEmail = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -32,9 +47,44 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('sent');
-    useCompileStore.getState().spellWord('THANKS', 2500);
-    setTimeout(() => setStatus('idle'), 4000);
+    const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!name.trim() || !isEmailValid || !message.trim()) {
+      // Validation failure: shake submit button (x ±6px 3 times) and keep form open
+      if (submitBtnRef.current && !reduced) {
+        gsap.killTweensOf(submitBtnRef.current);
+        gsap.fromTo(
+          submitBtnRef.current,
+          { x: -6 },
+          {
+            x: 6,
+            duration: 0.07,
+            repeat: 5,
+            yoyo: true,
+            ease: 'power1.inOut',
+            onComplete: () => {
+              gsap.set(submitBtnRef.current, { x: 0 });
+            },
+          }
+        );
+      }
+      return;
+    }
+
+    // Deploy sequence: collapse fields (height -> 0, opacity -> 0, 0.4s) into terminal line
+    setDeployState('deploying');
+    try {
+      window.dispatchEvent(new CustomEvent('deploy-burst'));
+    } catch {}
+
+    const delay = reduced ? 100 : 1200;
+    setTimeout(() => {
+      setDeployState('delivered');
+      try {
+        useCompileStore.getState().spellWord('THANKS', 2500);
+      } catch {}
+    }, delay);
   };
 
   return (
@@ -193,64 +243,128 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
                   DIRECT DISPATCH
                 </span>
               </div>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60 mb-2">
-                      01 // Identity / Name
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="NAME OR ORGANIZATION"
-                      className="w-full px-4 py-2.5 bg-[#07070a] border border-[#d8dde6]/20 text-xs font-mono text-white placeholder:text-[#d8dde6]/35 focus:border-[#ff5b1f] focus:outline-none transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60 mb-2">
-                      02 // Return Signal / Email
-                    </label>
-                    <input
-                      required
-                      type="email"
-                      placeholder="CONTACT@DOMAIN.COM"
-                      className="w-full px-4 py-2.5 bg-[#07070a] border border-[#d8dde6]/20 text-xs font-mono text-white placeholder:text-[#d8dde6]/35 focus:border-[#ff5b1f] focus:outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60 mb-2">
-                    03 // Inquiry Brief / Scope
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    placeholder="DESCRIBE PROJECT GOALS, TECH STACK, TIMELINES & COLLABORATION SCOPE..."
-                    className="w-full px-4 py-2.5 bg-[#07070a] border border-[#d8dde6]/20 text-xs font-mono text-white placeholder:text-[#d8dde6]/35 focus:border-[#ff5b1f] focus:outline-none transition-colors resize-none"
-                  />
-                </div>
-
-                <div className="pt-2 flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/40">
-                    ENCRYPTION: SSL / DIRECT DISPATCH
-                  </span>
-                  <MagneticButton>
-                    <DirectionalButton
-                      as="button"
-                      type="submit"
-                      fillColor="orange"
-                      className="border border-[#ff5b1f] bg-[#ff5b1f] text-black font-mono text-xs font-bold uppercase tracking-mono shadow-md"
-                    >
-                      <div className="flex items-center gap-2 px-6 py-2.5">
-                        <span>{status === 'sent' ? 'Transmission Dispatched' : 'SEND MESSAGE'}</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              <AnimatePresence mode="wait">
+                {deployState === 'idle' && (
+                  <motion.form
+                    key="contact-form"
+                    onSubmit={handleSubmit}
+                    initial={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="space-y-5 overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60 mb-2">
+                          01 // Identity / Name
+                        </label>
+                        <input
+                          required
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="NAME OR ORGANIZATION"
+                          className="w-full px-4 py-2.5 bg-[#07070a] border border-[#d8dde6]/20 text-xs font-mono text-white placeholder:text-[#d8dde6]/35 focus:border-[#ff5b1f] focus:outline-none transition-colors"
+                        />
                       </div>
-                    </DirectionalButton>
-                  </MagneticButton>
-                </div>
-              </form>
+
+                      <div>
+                        <label className="block font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60 mb-2">
+                          02 // Return Signal / Email
+                        </label>
+                        <input
+                          required
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="CONTACT@DOMAIN.COM"
+                          className="w-full px-4 py-2.5 bg-[#07070a] border border-[#d8dde6]/20 text-xs font-mono text-white placeholder:text-[#d8dde6]/35 focus:border-[#ff5b1f] focus:outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/60 mb-2">
+                        03 // Inquiry Brief / Scope
+                      </label>
+                      <textarea
+                        required
+                        rows={4}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="DESCRIBE PROJECT GOALS, TECH STACK, TIMELINES & COLLABORATION SCOPE..."
+                        className="w-full px-4 py-2.5 bg-[#07070a] border border-[#d8dde6]/20 text-xs font-mono text-white placeholder:text-[#d8dde6]/35 focus:border-[#ff5b1f] focus:outline-none transition-colors resize-none"
+                      />
+                    </div>
+
+                    <div className="pt-2 flex items-center justify-between">
+                      <span className="font-mono text-[10px] uppercase tracking-mono text-[#d8dde6]/40">
+                        ENCRYPTION: SSL / DIRECT DISPATCH
+                      </span>
+                      <div ref={submitBtnRef}>
+                        <MagneticButton>
+                          <DirectionalButton
+                            as="button"
+                            type="submit"
+                            fillColor="orange"
+                            className="border border-[#ff5b1f] bg-[#ff5b1f] text-black font-mono text-xs font-bold uppercase tracking-mono shadow-md"
+                          >
+                            <div className="flex items-center gap-2 px-6 py-2.5">
+                              <span>SEND MESSAGE</span>
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                          </DirectionalButton>
+                        </MagneticButton>
+                      </div>
+                    </div>
+                  </motion.form>
+                )}
+
+                {deployState === 'deploying' && (
+                  <motion.div
+                    key="deploying-terminal"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="py-16 px-4 flex items-center gap-2 font-mono text-sm sm:text-base text-white/90"
+                  >
+                    <span className="text-[#ff5b1f] font-bold text-lg leading-none">›</span>
+                    <span>deploying message…</span>
+                    <span className="inline-block w-2 h-4 bg-[#ff5b1f] animate-pulse ml-0.5 align-middle" />
+                  </motion.div>
+                )}
+
+                {deployState === 'delivered' && (
+                  <motion.div
+                    key="delivered-terminal"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="py-14 px-4 space-y-5"
+                  >
+                    <div className="flex items-center gap-2.5 font-mono text-sm sm:text-base text-[#d8dde6]/80">
+                      <span className="text-[#ff5b1f] font-bold text-lg leading-none">✓</span>
+                      <span>delivered — I'll reply within 24h</span>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeployState('idle');
+                          setName('');
+                          setEmail('');
+                          setMessage('');
+                        }}
+                        className="inline-flex items-center gap-2 font-mono text-xs text-[#ff5b1f] hover:text-[#ff7844] uppercase tracking-mono px-3 py-1.5 border border-[#ff5b1f]/30 hover:border-[#ff5b1f] transition-all bg-[#ff5b1f]/5 cursor-pointer"
+                      >
+                        <span>↺ send another</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
