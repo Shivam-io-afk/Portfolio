@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import type { PortfolioData } from '../../data/portfolioData';
-import { ScatterText } from '../ui/ScatterText';
+import { CompileHeading } from '../ui/CompileHeading';
+import { CompileLabel } from '../ui/CompileLabel';
 
 interface ExperienceAndCredentialsProps {
   experience: PortfolioData['experience'];
@@ -27,13 +28,16 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
-              <span>STAGE 03 /// RUNTIME.TRAJECTORY</span>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
+              <CompileLabel text="STAGE 03 /// RUNTIME.TRAJECTORY" />
             </div>
-            <h2 className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-8">
-              <ScatterText>Field Experience.</ScatterText>
-            </h2>
+            <CompileHeading
+              as="h2"
+              text="Field"
+              accent="Experience."
+              className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-8"
+            />
 
             <div className="compile-card p-6 sm:p-8 space-y-0 divide-y divide-[#d8dde6]/10">
               {experience.map((exp, idx) => (
@@ -71,9 +75,12 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h3 className="font-grotesk text-2xl sm:text-3xl text-white font-bold tracking-tight mb-6">
-              <ScatterText>Verified Credentials.</ScatterText>
-            </h3>
+            <CompileHeading
+              as="h3"
+              text="Verified"
+              accent="Credentials."
+              className="font-grotesk text-2xl sm:text-3xl text-white font-bold tracking-tight mb-6"
+            />
 
             <div className="compile-card p-6 sm:p-8 space-y-0 divide-y divide-[#d8dde6]/10">
               {certifications.map((cert, idx) => (
@@ -119,13 +126,16 @@ export const ExperienceAndCredentials: React.FC<ExperienceAndCredentialsProps> =
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
-            <span>ACADEMIC FOUNDATIONS</span>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
+            <CompileLabel text="ACADEMIC FOUNDATIONS" />
           </div>
-          <h2 className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-8">
-            <ScatterText>Education History.</ScatterText>
-          </h2>
+          <CompileHeading
+            as="h2"
+            text="Education"
+            accent="History."
+            className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-8"
+          />
 
           <div className="compile-card p-6 sm:p-8 space-y-0 divide-y divide-[#d8dde6]/10">
             {education.map((edu, idx) => (

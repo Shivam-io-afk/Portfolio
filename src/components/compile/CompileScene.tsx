@@ -704,11 +704,16 @@ function World({ ids, count, accent, background, brightness }: { ids: string[]; 
     const onDown = () => {
       pulse.current = 1;
     };
+    const onPulse = () => {
+      pulse.current = 1;
+    };
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerdown', onDown, { passive: true });
+    window.addEventListener('compile-pulse', onPulse);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('compile-pulse', onPulse);
     };
   }, []);
 

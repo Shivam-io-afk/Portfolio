@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { SkillCategory } from '../../data/portfolioData';
-import { ScatterText } from '../ui/ScatterText';
+import { CompileHeading } from '../ui/CompileHeading';
+import { CompileLabel } from '../ui/CompileLabel';
 import { useCompileStore } from '../../store/useCompileStore';
 import {
   CONSTELLATION_REPOS,
@@ -36,13 +37,16 @@ export const Skills: React.FC<SkillsProps> = ({ categories }) => {
         className="mb-16 pb-6 border-b border-[#d8dde6]/10 flex flex-col md:flex-row md:items-end justify-between gap-6"
       >
         <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
-            <span>STAGE 02 /// ARSENAL.CONSTELLATION</span>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
+            <CompileLabel text="STAGE 02 /// ARSENAL.CONSTELLATION" />
           </div>
-          <h2 className="font-grotesk text-3xl sm:text-5xl text-white font-bold tracking-tight">
-            <ScatterText>Technical Arsenal.</ScatterText>
-          </h2>
+          <CompileHeading
+            as="h2"
+            text="Technical"
+            accent="Arsenal."
+            className="font-grotesk text-3xl sm:text-5xl text-white font-bold tracking-tight"
+          />
         </div>
         <div className="flex flex-col md:items-end gap-2">
           <p className="text-xs sm:text-sm font-grotesk text-[#d8dde6]/80 max-w-md leading-relaxed md:text-right">

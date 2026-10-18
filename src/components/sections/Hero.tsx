@@ -1,7 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { PortfolioData } from '../../data/portfolioData';
-import { ScrambleText } from '../ui/ScrambleText';
+import { CompileHeading } from '../ui/CompileHeading';
+import { CompileLabel } from '../ui/CompileLabel';
+import { HeroStatCounter } from '../ui/HeroStatCounter';
 import { ArrowUpRight, GitBranch, Terminal } from 'lucide-react';
 import { MagneticButton } from '../ui/MagneticButton';
 
@@ -18,10 +20,8 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
       {/* Top Eyebrow: Stage 00 / SOURCE + Build Pipeline tag */}
       <div className="flex items-center justify-between border-b border-[#d8dde6]/10 pb-3">
         <div className="flex items-center gap-2.5 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#d8dde6]/80">
-          <span className="w-2 h-2 rounded-full bg-[#ff5b1f] shadow-signal-glow-sm animate-pulse" />
-          <span className="text-white font-semibold">STAGE 00</span>
-          <span className="text-[#d8dde6]/30">///</span>
-          <span className="text-[#ff5b1f] font-mono">SOURCE.INIT</span>
+          <span className="w-2 h-2 rounded-full bg-[#ff5b1f] shadow-signal-glow-sm animate-pulse shrink-0" />
+          <CompileLabel text="STAGE 00 /// SOURCE.INIT" />
           <span className="text-[#d8dde6]/30 hidden sm:inline">///</span>
           <span className="text-[#d8dde6]/50 hidden sm:inline">{data.personal.location}</span>
         </div>
@@ -40,26 +40,29 @@ export const Hero: React.FC<HeroProps> = ({ data }) => {
             <span>// ARCHITECTURE ENTRY POINT</span>
           </div>
 
-          <h1 className="text-[clamp(2.6rem,5.5vw,5.6rem)] leading-[0.94] tracking-tight font-grotesk text-white">
-            <span className="block uppercase font-bold text-[#d8dde6]">
-              <ScrambleText text="SHIVAM" />
-            </span>
-            <span className="block italic font-serif text-[#ff5b1f] sm:pl-4 text-[1.05em] font-normal tracking-normal">
-              Mishra.
-            </span>
-          </h1>
+          <CompileHeading
+            as="h1"
+            text="SHIVAM"
+            accent="Mishra."
+            accentOnNewLine
+            delay={0.3}
+            speed={0.75}
+            className="text-[clamp(2.6rem,5.5vw,5.6rem)] leading-[0.94] tracking-tight font-grotesk text-white font-bold block"
+          />
 
-          <p className="font-grotesk text-base sm:text-xl text-[#d8dde6]/90 font-light leading-snug">
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="font-grotesk text-base sm:text-xl text-[#d8dde6]/90 font-light leading-snug"
+          >
             MERN Stack Developer & Creative Technologist <span className="text-[#ff5b1f]">crafting</span> high-performance web apps, with AI features integrated through APIs.
-          </p>
+          </motion.p>
 
-          {/* Minimal Key Metrics Row */}
+          {/* Minimal Key Metrics Row with Split-Flap and Scramble Numbers */}
           <div className="flex flex-wrap items-center gap-5 pt-4 border-t border-[#d8dde6]/10">
             {data.metrics.map((m, idx) => (
-              <div key={idx} className="flex items-baseline gap-2 font-mono">
-                <span className="text-[#ff5b1f] font-bold text-base sm:text-lg">{m.value}</span>
-                <span className="text-[10px] uppercase tracking-mono text-[#d8dde6]/50">{m.label}</span>
-              </div>
+              <HeroStatCounter key={idx} value={m.value} label={m.label} />
             ))}
           </div>
         </div>

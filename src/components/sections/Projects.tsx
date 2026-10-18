@@ -3,7 +3,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, GitBranch, Layers } from 'lucide-react';
 import type { Project } from '../../data/portfolioData';
-import { ScatterText } from '../ui/ScatterText';
+import { CompileHeading } from '../ui/CompileHeading';
+import { CompileLabel } from '../ui/CompileLabel';
 import { useCompileStore } from '../../store/useCompileStore';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -203,13 +204,16 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
       {/* Section Eyebrow & Title */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 gap-6 pb-6 border-b border-[#d8dde6]/10">
         <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] animate-pulse" />
-            <span>STAGE 01 /// BUILD.TOWERS</span>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] animate-pulse shrink-0" />
+            <CompileLabel text="STAGE 01 /// BUILD.TOWERS" />
           </div>
-          <h2 className="font-grotesk text-3xl sm:text-5xl text-white font-bold tracking-tight">
-            <ScatterText>Selected Works.</ScatterText>
-          </h2>
+          <CompileHeading
+            as="h2"
+            text="Selected"
+            accent="Works."
+            className="font-grotesk text-3xl sm:text-5xl text-white font-bold tracking-tight"
+          />
         </div>
         <p className="text-xs sm:text-sm font-grotesk text-[#d8dde6]/70 max-w-md leading-relaxed">
           Production full-stack applications, real-time architectures, and modular systems compiled on modern web infrastructure.

@@ -88,4 +88,15 @@ body.deep-dive-open .snav {
   transition: opacity 0.3s ease !important;
 }
 
+@keyframes splitFlapRollMini {
+  0% { transform: translateY(12%) rotateX(0deg); opacity: 1; }
+  50% { transform: translateY(12%) rotateX(-90deg); opacity: 0.3; }
+  100% { transform: translateY(12%) rotateX(0deg); opacity: 1; }
+}
+
+.animate-split-flap-top {
+  animation: splitFlapRollMini 0.055s linear infinite;
+  transform-origin: bottom center;
+}
+
 

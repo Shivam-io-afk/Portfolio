@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import type { Project } from '../../data/portfolioData';
 import { useCompileStore } from '../../store/useCompileStore';
+import { CompileHeading } from '../ui/CompileHeading';
+import { CompileLabel } from '../ui/CompileLabel';
 
 interface ProjectDeepDiveModalProps {
   projects: Project[];
@@ -174,13 +176,19 @@ export const ProjectDeepDiveModal: React.FC<ProjectDeepDiveModalProps> = ({ proj
       <div className="max-w-6xl mx-auto px-6 py-10 w-full space-y-12">
         {/* Header Title Banner */}
         <div className="space-y-3">
-          <div className="font-mono text-[11px] text-[#ff5b1f] uppercase tracking-mono flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#ff5b1f] animate-pulse" />
-            <span>COMPILATION CASE STUDY /// {activeProject.id.toUpperCase()}</span>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#ff5b1f] animate-pulse shrink-0" />
+            <CompileLabel
+              key={activeProject.id}
+              text={`COMPILATION CASE STUDY /// ${activeProject.id.toUpperCase()}`}
+            />
           </div>
-          <h1 className="font-grotesk text-3xl sm:text-5xl font-bold text-white tracking-tight">
-            {activeProject.title}
-          </h1>
+          <CompileHeading
+            key={activeProject.id}
+            as="h1"
+            text={activeProject.title}
+            className="font-grotesk text-3xl sm:text-5xl font-bold text-white tracking-tight"
+          />
           <p className="font-mono text-sm sm:text-base text-[#ff5b1f]">
             // {activeProject.subtitle}
           </p>

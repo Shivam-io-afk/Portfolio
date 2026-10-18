@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Check, ArrowRight, ArrowUpRight, GitBranch } from 'lucide-react';
 import type { PortfolioData } from '../../data/portfolioData';
-import { ScatterText } from '../ui/ScatterText';
+import { CompileHeading } from '../ui/CompileHeading';
+import { CompileLabel } from '../ui/CompileLabel';
 import { MagneticButton } from '../ui/MagneticButton';
 import { ResumeBundlerButton } from '../ui/ResumeBundlerButton';
 import ScrollMarquee from '../ui/ScrollMarquee';
@@ -46,13 +47,16 @@ export const Contact: React.FC<ContactProps> = ({ personal }) => {
           transition={{ duration: 0.6 }}
           className="max-w-2xl mb-16"
         >
-          <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
-            <span>STAGE 04 /// DEPLOY.TRANSMISSION</span>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
+            <CompileLabel text="STAGE 04 /// DEPLOY.TRANSMISSION" />
           </div>
-          <h2 className="font-grotesk text-3xl sm:text-5xl text-white font-bold tracking-tight mb-4">
-            <ScatterText>Get in Touch.</ScatterText>
-          </h2>
+          <CompileHeading
+            as="h2"
+            text="Get in"
+            accent="Touch."
+            className="font-grotesk text-3xl sm:text-5xl text-white font-bold tracking-tight mb-4"
+          />
           <p className="font-grotesk text-xs sm:text-sm text-[#d8dde6]/80 leading-relaxed">
             Direct channel open for full-time engineering appointments, scalable web applications, and creative technology initiatives.
           </p>

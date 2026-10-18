@@ -6,6 +6,8 @@ import { MILESTONES, Milestone } from './roadmapData';
 import { MonthSpine, MonthSpineHandle } from './MonthSpine';
 import { SplitFlapCounter } from './SplitFlapCounter';
 import { PixelBloomCanvas } from './PixelBloomCanvas';
+import { CompileHeading } from '../ui/CompileHeading';
+import { CompileLabel } from '../ui/CompileLabel';
 import type { PortfolioData } from '../../data/portfolioData';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -111,13 +113,16 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
   if (isReducedMotion) {
     return (
       <section id="experience" className="relative py-24 px-4 sm:px-10 max-w-6xl mx-auto z-10 text-[#d8dde6]">
-        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-mono text-[#ff5b1f] mb-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f]" />
-          <span>STAGE 03 /// ROADMAP ASCENT (STATIC TIMELINE)</span>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#ff5b1f] shrink-0" />
+          <CompileLabel text="STAGE 03 /// ROADMAP.ASCENT" />
         </div>
-        <h2 className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-12">
-          Milestone Trajectory (2022–2026).
-        </h2>
+        <CompileHeading
+          as="h2"
+          text="Milestone"
+          accent="Trajectory (2022–2026)."
+          className="font-grotesk text-3xl sm:text-4xl text-white font-bold tracking-tight mb-12"
+        />
 
         <div className="space-y-8 divide-y divide-[#d8dde6]/10">
           {MILESTONES.map((item, idx) => (
@@ -171,10 +176,10 @@ export const RoadmapAscent: React.FC<RoadmapAscentProps> = ({ certifications = [
         {/* Subtle Top Header bar inside pinned view */}
         <div className="w-full px-6 sm:px-12 py-3 flex items-center justify-between border-b border-[#d8dde6]/10 z-20 bg-[#07070a]/90 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[11px] uppercase tracking-mono text-[#ff5b1f] font-semibold flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#ff5b1f] animate-ping" />
-              STAGE 03 /// RUNTIME.TRAJECTORY
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#ff5b1f] animate-ping shrink-0" />
+              <CompileLabel text="STAGE 03 /// RUNTIME.TRAJECTORY" />
+            </div>
             <span className="hidden sm:inline text-[#d8dde6]/20 font-mono">|</span>
             <span className="hidden sm:inline font-mono text-[11px] uppercase tracking-mono text-[#d8dde6]/60">
               ROADMAP ASCENT [ JUN &apos;22 &rarr; JUN &apos;26 ]
